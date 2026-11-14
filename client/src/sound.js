@@ -66,7 +66,12 @@ export const sfx = {
   toggle: () => tone(1400, 0, 0.03, { type: 'square', gain: 0.04 }),
   win: () => [523, 659, 784, 1046, 784, 1046].forEach((f, i) => tone(f, i * 0.12, 0.25, { type: 'triangle', gain: 0.12 })),
   lose: () => [392, 349, 311, 262].forEach((f, i) => tone(f, i * 0.2, 0.3, { type: 'triangle', gain: 0.1 })),
+  explosion: () => { rumble(0.6); tone(220, 0, 0.5, { type: 'sawtooth', gain: 0.08, slide: 40 }); },
 };
+
+export function prefersReducedMotion() {
+  try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; }
+}
 
 export const isMuted = () => prefs.muted;
 export function setMuted(v) { prefs.muted = v; write('smd-muted', v ? '1' : '0'); if (v) stopSpeaking(); }

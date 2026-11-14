@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hangar NASA: ensamblaje y lanzamiento</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--panel:#ffffff;--ink:#10172b;--line:#c9d2e4;--accent:#e8590c;--ok:#0f8a6e;--bad:#c92a3a;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--panel:#141b33;--ink:#eef2fb;--line:#2a3555;--accent:#ff8a3d;--ok:#3dd6b0;--bad:#ff6b78;color-scheme:dark}}
+:root[data-theme="dark"]{--panel:#141b33;--ink:#eef2fb;--line:#2a3555;--accent:#ff8a3d;--ok:#3dd6b0;--bad:#ff6b78;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--panel);color:var(--ink);font-family:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif}
+#app{position:relative;height:100%;overflow:hidden;user-select:none;-webkit-user-select:none}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+.pill{position:absolute;left:10px;background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:6px 12px;font-weight:600;font-size:.9rem;color:var(--ink)}
+#hud{top:10px}#tel{top:50px;display:none}#camBtn{top:90px;display:none;font-family:inherit;cursor:pointer}
+#fx{position:absolute;top:20%;left:0;right:0;text-align:center;font-size:clamp(2rem,9vw,4.5rem);font-weight:700;color:#fff;text-shadow:0 3px 14px rgba(0,0,0,.75);pointer-events:none;opacity:0;transition:opacity .3s}
+#fx.on{opacity:1}
+#fade{position:absolute;inset:0;background:#000;opacity:0;transition:opacity .6s;pointer-events:none}
+.lbl{position:absolute;transform:translate(-50%,-100%);font-size:12px;font-weight:600;padding:2px 7px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;pointer-events:none;white-space:nowrap}
+#cat{position:absolute;top:56px;left:10px;right:10px;display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+#cat h2{flex:none;margin:0;align-self:center;font-size:.85rem;color:#fff;text-shadow:0 1px 4px #000}
+.chip{flex:none;display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--panel);color:var(--ink);border:2px solid var(--line);border-radius:10px;font:inherit;font-size:.9rem;font-weight:600;cursor:pointer;text-align:left}
+.chip i{width:14px;height:14px;border-radius:4px;border:1px solid var(--line);flex:none}
+.chip:hover:not(:disabled){border-color:var(--accent)}
+.chip:disabled{opacity:.55;cursor:default;border-color:var(--ok)}
+.chip.bad{border-color:var(--bad)}
+@media (min-width:760px){#cat{left:auto;right:10px;width:230px;flex-direction:column;overflow:visible}#cat h2{align-self:flex-start;font-size:1rem}}
+#pad{position:absolute;left:10px;top:50%;display:grid;grid-template-columns:repeat(3,42px);grid-template-areas:". w ." "a s d";gap:4px}
+#pad button{height:42px;border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;opacity:.85;font-size:1rem;touch-action:none}
+#pad [data-k=w]{grid-area:w}#pad [data-k=a]{grid-area:a}#pad [data-k=s]{grid-area:s}#pad [data-k=d]{grid-area:d}
+#dlg{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);width:min(680px,calc(100% - 20px));background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:12px 16px}
+#who{font-weight:700;color:var(--accent);margin-bottom:2px}
+#say{margin:0;line-height:1.45}
+#opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+#opts:empty{display:none}
+#opts button{padding:10px 14px;border:2px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;font:inherit;font-weight:600;cursor:pointer;text-align:left}
+#opts button:hover{border-color:var(--accent)}
+#mis{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,8,20,.75);padding:16px;overflow:auto}
+.mbox{max-width:760px;width:100%;color:#fff;margin:auto}
+.mbox h1{margin:0 0 6px;font-size:clamp(1.6rem,5vw,2.4rem)}
+.mbox p{margin:0 0 16px;color:#d5dcef}
+#mcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.mcard{display:flex;flex-direction:column;gap:6px;text-align:left;padding:16px;background:var(--panel);color:var(--ink);border:2px solid var(--line);border-radius:14px;font:inherit;cursor:pointer}
+.mcard:hover{border-color:var(--accent)}.mcard .mi{font-size:2rem}.mcard em{font-style:normal;color:var(--accent);font-weight:600}
+#tl{position:absolute;right:10px;top:10px;margin:0;padding:8px 12px;list-style:none;display:none;background:var(--panel);border:2px solid var(--line);border-radius:10px;font-size:.78rem;color:var(--ink)}
+#tl li::before{content:"○ "}#tl li.done{color:var(--ok)}#tl li.done::before{content:"✓ "}#tl li.cur{color:var(--accent);font-weight:700}#tl li.cur::before{content:"▶ "}
+#orbitMap{position:absolute;left:10px;bottom:10px;display:none;background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+#orbitMap canvas{display:block;border-radius:6px}
+#orbitMap span{display:block;margin-top:4px;font-size:.72rem;font-weight:600;color:var(--ink)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="pill" id="hud"><span id="step">Hangar de ensamblaje</span></div>
+  <div class="pill" id="tel"></div>
+  <button class="pill" id="camBtn">Cámara: suelo</button>
+  <div id="cat"><h2>Catálogo de piezas</h2></div>
+  <div id="pad"><button data-k="w" aria-label="Avanzar">▲</button><button data-k="a" aria-label="Izquierda">◀</button><button data-k="s" aria-label="Retroceder">▼</button><button data-k="d" aria-label="Derecha">▶</button></div>
+  <div id="fx"></div><div id="labels"></div><div id="fade"></div><ol id="tl"></ol>
+  <div id="orbitMap"><canvas width="150" height="150"></canvas><span id="orbitMapLbl"></span></div>
+  <div id="mis"><div class="mbox"><h1>Elige tu misión</h1><p>Escoge el destino. Tu misión cambia la carga que llevas y las fases del viaje.</p><div id="mcards"></div></div></div>
+  <div id="dlg" style="display:none"><div id="who">Control de misión</div><p id="say"></p><div id="opts"></div></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+var app=document.getElementById("app"),sayEl=document.getElementById("say"),optsEl=document.getElementById("opts"),stepEl=document.getElementById("step"),fxEl=document.getElementById("fx"),lblBox=document.getElementById("labels"),catEl=document.getElementById("cat"),fadeEl=document.getElementById("fade"),padEl=document.getElementById("pad"),telEl=document.getElementById("tel"),camBtn=document.getElementById("camBtn"),tlEl=document.getElementById("tl"),misEl=document.getElementById("mis");
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function rnd(){return Math.random()}
+function say(txt,opts){sayEl.textContent=txt;optsEl.innerHTML="";(opts||[]).forEach(function(o){var b=document.createElement("button");b.textContent=o[0];b.onclick=o[1];optsEl.appendChild(b)})}
+var fxT;function fx(t,ms){fxEl.textContent=t;fxEl.classList.add("on");clearTimeout(fxT);fxT=setTimeout(function(){fxEl.classList.remove("on")},ms||2000)}
+
+/* ===== Escena base ===== */
+var renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+app.insertBefore(renderer.domElement,app.firstChild);var cv=renderer.domElement;
+var scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(60,1,.3,60000);cam.rotation.order="YXZ";
+var skyDay=new THREE.Color(0xa9d4f5),skyMid=new THREE.Color(0x2457a6),skyNight=new THREE.Color(0x02030a),tmpC=new THREE.Color();
+scene.background=skyDay.clone();scene.fog=new THREE.Fog(0xa9d4f5,150,1500);
+var hemi=new THREE.HemisphereLight(0xffffff,0x667788,1.05);scene.add(hemi);
+var arrLight=new THREE.DirectionalLight(0xfff0dc,0);scene.add(arrLight);
+var sun=new THREE.DirectionalLight(0xffffff,.8);sun.position.set(8,14,6);scene.add(sun);
+function M(c,m,r){return new THREE.MeshStandardMaterial({color:c,roughness:r===undefined?.6:r,metalness:m===undefined?.2:m,side:THREE.DoubleSide})}
+function mesh(g,c,x,y,z){var m=new THREE.Mesh(g,typeof c==="number"?M(c):c);m.position.set(x||0,y||0,z||0);return m}
+function box(w,h,d,c,x,y,z){var m=mesh(new THREE.BoxGeometry(w,h,d),c,x,y,z);scene.add(m);return m}
+function cyl(rt,rb,h,c,x,y,z,seg){return mesh(new THREE.CylinderGeometry(rt,rb,h,seg||24),c,x,y,z)}
+var K=2.2,HX=28,RZ0=-6,RX=0,RZ=-300,TS=.7;
+
+/* ===== Exterior: suelo, Tierra, atmósfera, estrellas ===== */
+var ground=mesh(new THREE.PlaneGeometry(3000,3000),0x6f8a5e,0,-.02,-150);ground.rotation.x=-Math.PI/2;scene.add(ground);
+(function(){var c=document.createElement("canvas");c.width=1024;c.height=512;var g=c.getContext("2d");g.fillStyle="#1f5fa8";g.fillRect(0,0,1024,512);
+ function blob(x,y,rx,ry,col,a){g.globalAlpha=a;g.fillStyle=col;g.beginPath();g.ellipse(x,y,rx,ry,rnd()*3,0,6.283);g.fill()}
+ for(var i=0;i<40;i++)blob(rnd()*1024,rnd()*512,30+rnd()*90,20+rnd()*50,rnd()<.5?"#4f8a45":"#8a7a4a",1);
+ blob(768,256,170,110,"#4f8a45",1);for(var i=0;i<120;i++)blob(700+rnd()*140,200+rnd()*110,6+rnd()*14,4+rnd()*8,rnd()<.5?"#3f7a3a":"#6b9a52",.8);
+ for(var i=0;i<160;i++)blob(rnd()*1024,rnd()*512,18+rnd()*60,6+rnd()*14,"#ffffff",.45);
+ for(var i=0;i<30;i++)blob(690+rnd()*160,190+rnd()*130,10+rnd()*30,4+rnd()*8,"#ffffff",.6);
+ var tex=new THREE.CanvasTexture(c);var e=mesh(new THREE.SphereGeometry(20000,72,48),new THREE.MeshStandardMaterial({map:tex,roughness:1,metalness:0}),0,-20000.6,-150);e.rotation.x=Math.PI/2;scene.add(e)})();
+var atmo=mesh(new THREE.SphereGeometry(20600,48,32),new THREE.MeshBasicMaterial({color:0x66b3ff,side:THREE.BackSide,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}),0,-20000.6,-150);atmo.visible=false;scene.add(atmo);
+var sg=(function(){var NS=2600,P=new Float32Array(NS*3),C=new Float32Array(NS*3);
+ for(var i=0;i<NS;i++){var x,y,z,br,a=rnd()*6.283;
+  if(i<1500){var b=Math.acos(rnd()*2-1);x=Math.sin(b)*Math.cos(a);y=Math.cos(b);z=Math.sin(b)*Math.sin(a);br=.35+Math.pow(rnd(),2)*.65}
+  else{var e=(rnd()+rnd()+rnd()-1.5)*.16,ce=Math.cos(e),vx=Math.cos(a)*ce,vy=Math.sin(e),vz=Math.sin(a)*ce;x=vx;y=vy*.54-vz*.84;z=vy*.84+vz*.54;br=.2+rnd()*.4}
+  P[i*3]=30000*x;P[i*3+1]=30000*y;P[i*3+2]=30000*z;var tn=rnd();C[i*3]=br*(tn<.2?.8:1);C[i*3+1]=br*(tn<.2?.85:tn>.85?.9:1);C[i*3+2]=br*(tn>.85?.8:1)}
+ var g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.BufferAttribute(P,3));g.setAttribute("color",new THREE.BufferAttribute(C,3));return g}());
+var stars=new THREE.Points(sg,new THREE.PointsMaterial({size:2,vertexColors:true,sizeAttenuation:false,transparent:true,opacity:0,depthWrite:false,fog:false}));scene.add(stars);
+
+/* ===== Plataforma de lanzamiento ===== */
+scene.add(cyl(14,14.5,.5,0x9aa1ad,RX,.25,RZ,40));box(9,.2,9,0x2b2f38,RX,.52,RZ);
+for(var i=0;i<4;i++){var tx=RX+9+(i%2)*3.4,tz=RZ-1.7+Math.floor(i/2)*3.4;box(.8,44,.8,0xb0482e,tx,22,tz)}
+for(var y=4;y<44;y+=5){box(4.2,.4,.4,0xb0482e,RX+10.7,y,RZ-1.7);box(4.2,.4,.4,0xb0482e,RX+10.7,y,RZ+1.7);box(.4,.4,3.8,0xb0482e,RX+9,y,RZ);box(.4,.4,3.8,0xb0482e,RX+12.4,y,RZ)}
+[12,24,36].forEach(function(y){box(8,.5,.7,0xd0d5de,RX+5.6,y,RZ)});
+[[-16,-16],[16,-16],[-16,16],[16,16]].forEach(function(p){box(.4,14,.4,0x888f9c,RX+p[0],7,RZ+p[1]);box(1.6,.8,1.6,new THREE.MeshBasicMaterial({color:0xffffee}),RX+p[0],14.2,RZ+p[1])});
+/* ===== Entorno NASA: cielo detallado, suelo e instalaciones ===== */
+var UP0=new THREE.Vector3(0,1,0);
+var ENV=(function(){
+ var AN=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+ function cvs(w,h){var c=document.createElement("canvas");c.width=w;c.height=h;return c}
+ function ctex(c,rx,ry){var t=new THREE.CanvasTexture(c);if(rx){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry)}t.anisotropy=AN;return t}
+ function std(c,r,m){return new THREE.MeshStandardMaterial({color:c,roughness:r===undefined?.75:r,metalness:m===undefined?.1:m})}
+ function lat(m,f,u){m.polygonOffset=true;m.polygonOffsetFactor=f;m.polygonOffsetUnits=u;return m}
+ var site=new THREE.Group();scene.add(site);
+ function put(m,x,y,z){m.position.set(x,y,z);site.add(m);return m}
+ function bx(w,h,d,c,x,y,z){return put(new THREE.Mesh(new THREE.BoxGeometry(w,h,d),typeof c==="number"?std(c):c),x,y,z)}
+ function cy(rt,rb,h,c,x,y,z,seg){return put(new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg||16),typeof c==="number"?std(c):c),x,y,z)}
+ function flat(w,d,mat,x,y,z,ry){var m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mat);m.rotation.x=-Math.PI/2;m.rotation.z=ry||0;return put(m,x,y,z)}
+ var beaconMat=new THREE.MeshBasicMaterial({color:0xff2a1a});
+ function beacon(x,y,z){put(new THREE.Mesh(new THREE.SphereGeometry(.7,8,6),beaconMat),x,y,z)}
+
+ /* ---------- texturas ---------- */
+ function grassTex(){var c=cvs(256,256),g=c.getContext("2d");g.fillStyle="#5b8444";g.fillRect(0,0,256,256);
+  var cs=["#4c7338","#6a9650","#78a05a","#527a3c","#8a9a55","#45693a"];
+  for(var i=0;i<2800;i++){g.fillStyle=cs[(rnd()*cs.length)|0];g.globalAlpha=.3+rnd()*.4;var s=1+rnd()*4;g.fillRect(rnd()*256,rnd()*256,s,s*(1+rnd()))}
+  g.globalAlpha=1;return ctex(c,150,150)}
+ function concTex(){var c=cvs(512,512),g=c.getContext("2d");g.fillStyle="#b4b8bf";g.fillRect(0,0,512,512);
+  for(var i=0;i<3200;i++){g.globalAlpha=.08+rnd()*.12;g.fillStyle=rnd()<.5?"#8f949c":"#d3d6db";g.fillRect(rnd()*512,rnd()*512,1+rnd()*3,1+rnd()*3)}
+  for(var i=0;i<14;i++){g.globalAlpha=.05+rnd()*.07;g.fillStyle="#555";g.beginPath();g.ellipse(rnd()*512,rnd()*512,20+rnd()*60,10+rnd()*30,rnd()*3,0,6.283);g.fill()}
+  g.globalAlpha=1;g.strokeStyle="#80858e";g.lineWidth=3;
+  for(var k=0;k<=512;k+=128){g.beginPath();g.moveTo(k,0);g.lineTo(k,512);g.stroke();g.beginPath();g.moveTo(0,k);g.lineTo(512,k);g.stroke()}
+  return ctex(c,6,6)}
+ function gravTex(){var c=cvs(256,256),g=c.getContext("2d");g.fillStyle="#9a958a";g.fillRect(0,0,256,256);
+  for(var i=0;i<4200;i++){var v=(90+rnd()*110)|0;g.fillStyle="rgb("+v+","+(v-4)+","+(v-12)+")";g.globalAlpha=.7;g.fillRect(rnd()*256,rnd()*256,1+rnd()*2.5,1+rnd()*2.5)}
+  g.globalAlpha=1;g.fillStyle="rgba(40,38,34,.3)";g.fillRect(124,0,8,256);return ctex(c,1,13)}
+ function meat(g,x,y,r){g.save();g.beginPath();g.arc(x,y,r,0,6.283);g.clip();g.fillStyle="#0b3d91";g.fillRect(x-r,y-r,2*r,2*r);
+  for(var i=0;i<46;i++){g.fillStyle="rgba(255,255,255,"+(.35+rnd()*.65)+")";g.beginPath();g.arc(x+(rnd()*2-1)*r,y+(rnd()*2-1)*r,Math.max(.6,r*(.01+rnd()*.025)),0,6.283);g.fill()}
+  g.strokeStyle="#ffffff";g.lineWidth=r*.07;g.beginPath();g.ellipse(x,y+r*.05,r*1.0,r*.36,-.5,.3,3.6);g.stroke();
+  g.strokeStyle="#fc3d21";g.lineWidth=r*.1;g.lineCap="round";g.beginPath();g.moveTo(x-r*.8,y+r*.55);g.quadraticCurveTo(x-r*.05,y-r*.1,x+r*.75,y-r*.5);g.stroke();
+  g.restore();g.fillStyle="#fff";g.font="bold "+(r*.5)+"px Arial";g.textAlign="center";g.fillText("NASA",x,y+r*.2);
+  g.lineWidth=r*.05;g.strokeStyle="#ffffff";g.beginPath();g.arc(x,y,r,0,6.283);g.stroke()}
+ function flagCv(w,h){var c=cvs(w,h),g=c.getContext("2d");for(var i=0;i<13;i++){g.fillStyle=i%2?"#ffffff":"#b22234";g.fillRect(0,i*h/13,w,h/13+1)}
+  g.fillStyle="#3c3b6e";g.fillRect(0,0,w*.4,h*7/13);g.fillStyle="#fff";
+  for(var r=0;r<5;r++)for(var k=0;k<6;k++)g.fillRect(w*.4*(k+.6)/6.2,h*7/13*(r+.55)/5.3,w*.016,w*.016);return c}
+ function vabTex(front){var c=cvs(512,512),g=c.getContext("2d");g.fillStyle="#e3e6ec";g.fillRect(0,0,512,512);
+  g.strokeStyle="#c9cfd9";g.lineWidth=1;for(var x=0;x<512;x+=16){g.beginPath();g.moveTo(x,0);g.lineTo(x,512);g.stroke()}
+  g.strokeStyle="#b4bbc7";g.lineWidth=2;for(var y=0;y<512;y+=64){g.beginPath();g.moveTo(0,y);g.lineTo(512,y);g.stroke()}
+  if(front){g.fillStyle="#7e8796";g.fillRect(150,150,212,362);g.strokeStyle="#5c6472";g.lineWidth=3;
+   for(var y=150;y<512;y+=52){g.beginPath();g.moveTo(150,y);g.lineTo(362,y);g.stroke()}
+   g.beginPath();g.moveTo(256,150);g.lineTo(256,512);g.stroke();g.drawImage(flagCv(180,95),26,26);meat(g,430,76,52)}
+  return ctex(c)}
+ function lccTex(){var c=cvs(512,200),g=c.getContext("2d");g.fillStyle="#d4d9e1";g.fillRect(0,0,512,200);
+  for(var r=0;r<2;r++)for(var k=0;k<14;k++){var x=18+k*35,y=20+r*58;g.fillStyle="#27476e";g.fillRect(x,y,26,38);g.fillStyle="rgba(180,215,255,.35)";g.fillRect(x,y,26,12)}
+  g.fillStyle="#0b3d91";g.fillRect(0,146,512,54);g.fillStyle="#fff";g.font="bold 25px Arial";g.textAlign="center";g.fillText("CENTRO DE CONTROL DE LANZAMIENTO",256,181);return ctex(c)}
+ function cloudTex(){var c=cvs(256,128),g=c.getContext("2d");
+  for(var i=0;i<28;i++){var x=40+rnd()*176,y=62+(rnd()-.5)*30-Math.abs(x-128)/6,r=16+rnd()*26,p=g.createRadialGradient(x,y,0,x,y,r);
+   p.addColorStop(0,"rgba(255,255,255,.55)");p.addColorStop(.6,"rgba(255,255,255,.22)");p.addColorStop(1,"rgba(255,255,255,0)");g.fillStyle=p;g.fillRect(x-r,y-r,2*r,2*r)}
+  g.globalCompositeOperation="source-atop";var sh=g.createLinearGradient(0,30,0,110);sh.addColorStop(0,"rgba(255,255,255,0)");sh.addColorStop(1,"rgba(110,130,165,.4)");g.fillStyle=sh;g.fillRect(0,0,256,128);
+  return new THREE.CanvasTexture(c)}
+ function skyTex(){var W=2048,H=1024,c=cvs(W,H),g=c.getContext("2d");
+  var gd=g.createLinearGradient(0,0,0,H/2);gd.addColorStop(0,"#15448b");gd.addColorStop(.3,"#2c6fbd");gd.addColorStop(.62,"#5ea3de");gd.addColorStop(.88,"#8fc7ee");gd.addColorStop(1,"#a9d4f5");
+  g.fillStyle=gd;g.fillRect(0,0,W,H/2);g.fillStyle="#a9d4f5";g.fillRect(0,H/2,W,H/2);
+  var sv=new THREE.Vector3(-.233,.276,-.932).normalize(),su=((Math.atan2(sv.z,-sv.x)/6.283185+1)%1)*W,sy=Math.acos(sv.y)/Math.PI*H;
+  g.save();g.translate(su,H/2);g.scale(3.4,1);var hg=g.createRadialGradient(0,0,0,0,0,150);hg.addColorStop(0,"rgba(255,228,175,.6)");hg.addColorStop(.5,"rgba(255,228,175,.22)");hg.addColorStop(1,"rgba(255,228,175,0)");g.fillStyle=hg;g.fillRect(-150,-150,300,150);g.restore();
+  var sg3=g.createRadialGradient(su,sy,0,su,sy,300);sg3.addColorStop(0,"rgba(255,255,248,1)");sg3.addColorStop(.035,"rgba(255,252,230,1)");sg3.addColorStop(.1,"rgba(255,240,195,.55)");sg3.addColorStop(.3,"rgba(255,232,175,.18)");sg3.addColorStop(1,"rgba(255,232,175,0)");
+  g.fillStyle=sg3;g.fillRect(su-300,sy-300,600,600);
+  function puff(x,y,r,col,a){var p=g.createRadialGradient(x,y,0,x,y,r);p.addColorStop(0,"rgba("+col+","+a+")");p.addColorStop(.55,"rgba("+col+","+(a*.55)+")");p.addColorStop(1,"rgba("+col+",0)");g.fillStyle=p;g.fillRect(x-r,y-r,2*r,2*r)}
+  function clear(x,y,m){var dx=x-su,dy=y-sy;return dx*dx+dy*dy>m*m}
+  /* cirros */
+  for(var i=0;i<46;i++){var x=60+rnd()*(W-120),y=150+rnd()*170;g.strokeStyle="rgba(255,255,255,"+(.1+rnd()*.16)+")";g.lineWidth=1.5+rnd()*4;g.lineCap="round";
+   g.beginPath();g.moveTo(x,y);g.quadraticCurveTo(x+70+rnd()*60,y-12-rnd()*22,x+150+rnd()*220,y+rnd()*26-13);g.stroke()}
+  /* estratocúmulos */
+  for(var i=0;i<46;i++){var x=100+rnd()*(W-200),y=330+rnd()*80,sx=3+rnd()*6;if(!clear(x,y,110))continue;
+   g.save();g.translate(x,y);g.scale(sx,1);var q=g.createRadialGradient(0,0,0,0,0,26);q.addColorStop(0,"rgba(255,255,255,"+(.2+rnd()*.22)+")");q.addColorStop(1,"rgba(255,255,255,0)");g.fillStyle=q;g.fillRect(-26,-26,52,52);g.restore()}
+  /* cúmulos con sombra inferior */
+  for(var n=0;n<24;n++){var cx=170+rnd()*(W-340),cy0=400+rnd()*100,s=.6+rnd()*1.0;if(!clear(cx,cy0,140))continue;var pf=[];
+   for(var k=0;k<15;k++){var px=cx+(rnd()-.5)*160*s,pr=(14+rnd()*24)*s,pk=1-Math.abs(px-cx)/(85*s);pf.push([px,cy0-pr*.4-Math.max(0,pk)*rnd()*34*s,pr])}
+   pf.forEach(function(p){puff(p[0],p[1]+p[2]*.45,p[2]*1.05,"112,134,170",.3)});
+   pf.forEach(function(p){puff(p[0],p[1],p[2],"255,255,255",.8)});
+   pf.forEach(function(p){puff(p[0]-p[2]*.2,p[1]-p[2]*.25,p[2]*.55,"255,255,255",.6)})}
+  /* bruma del horizonte */
+  for(var i=0;i<18;i++){var x=rnd()*W,y=490+rnd()*20;g.save();g.translate(x,y);g.scale(9,1);var q2=g.createRadialGradient(0,0,0,0,0,22);q2.addColorStop(0,"rgba(255,255,255,.35)");q2.addColorStop(1,"rgba(255,255,255,0)");g.fillStyle=q2;g.fillRect(-22,-22,44,44);g.restore()}
+  return ctex(c)}
+
+ /* ---------- cielo: cúpula + nubes que se atraviesan al subir ---------- */
+ var dome=new THREE.Mesh(new THREE.SphereGeometry(25000,48,32),new THREE.MeshBasicMaterial({map:skyTex(),side:THREE.BackSide,transparent:true,depthWrite:false,fog:false}));
+ dome.renderOrder=-10;dome.frustumCulled=false;scene.add(dome);
+ var cmats=[0,1,2].map(function(){return new THREE.SpriteMaterial({map:cloudTex(),transparent:true,depthWrite:false,opacity:.92})});
+ var clouds=new THREE.Group();
+ for(var i=0;i<80;i++){var sp2=new THREE.Sprite(cmats[i%3]),w=220+rnd()*440,a=rnd()*6.283,rr=120+rnd()*1900;sp2.scale.set(w,w*.5,1);sp2.position.set(Math.cos(a)*rr,140+rnd()*300,RZ+Math.sin(a)*rr*.9);clouds.add(sp2)}
+ scene.add(clouds);
+
+ /* ---------- suelo ---------- */
+ ground.material=new THREE.MeshStandardMaterial({map:grassTex(),roughness:1,metalness:0});
+ var pcol=[0x6f9a52,0x486f35,0xa09a68,0x7c8f4a,0x5a8a64,0x8a7f55];
+ for(var i=0;i<30;i++){var a=rnd()*6.283,rr=90+rnd()*1150,px=Math.cos(a)*rr,pz=RZ+Math.sin(a)*rr;if(Math.sqrt(px*px+pz*pz)<80)continue;
+  var pt=new THREE.Mesh(new THREE.CircleGeometry(1,28),lat(new THREE.MeshStandardMaterial({color:pcol[i%pcol.length],roughness:1,transparent:true,opacity:.5,depthWrite:false}),-1,-4));
+  pt.scale.set(40+rnd()*150,25+rnd()*80,1);pt.rotation.x=-Math.PI/2;pt.rotation.z=rnd()*3;put(pt,px,.03,pz)}
+ /* plataforma de concreto, marcas de quemado y anillo de seguridad */
+ flat(144,144,lat(new THREE.MeshStandardMaterial({map:concTex(),roughness:.92,metalness:0}),-3,-12),RX,.06,RZ);
+ var sc=cvs(256,256),sg2=sc.getContext("2d"),rg=sg2.createRadialGradient(128,128,0,128,128,128);
+ rg.addColorStop(0,"rgba(15,12,10,.7)");rg.addColorStop(.5,"rgba(25,20,16,.38)");rg.addColorStop(1,"rgba(25,20,16,0)");sg2.fillStyle=rg;sg2.fillRect(0,0,256,256);
+ flat(96,96,lat(new THREE.MeshBasicMaterial({map:ctex(sc),transparent:true,depthWrite:false}),-4,-16),RX,.085,RZ);
+ var hr=new THREE.Mesh(new THREE.RingGeometry(15,15.7,72),lat(std(0xf2c230,.6,0),-5,-20));hr.rotation.x=-Math.PI/2;put(hr,RX,.1,RZ);
+ var hr2=new THREE.Mesh(new THREE.RingGeometry(23,23.3,72),lat(std(0xf4f4f0,.7,0),-5,-20));hr2.rotation.x=-Math.PI/2;put(hr2,RX,.1,RZ);
+ /* logo de la NASA pintado en el piso, legible desde la cámara de despegue */
+ var lg=cvs(512,512),lgg=lg.getContext("2d");meat(lgg,256,256,246);
+ flat(15,15,lat(new THREE.MeshStandardMaterial({map:ctex(lg),roughness:.9,metalness:0,transparent:true}),-6,-24),RX+13,.095,RZ+21,.55);
+ /* camino de transporte (crawlerway) del hangar a la plataforma */
+ flat(20,258,lat(new THREE.MeshStandardMaterial({map:gravTex(),roughness:1,metalness:0}),-3,-10),0,.05,-157);
+ [-9.6,9.6].forEach(function(x){flat(.5,258,lat(std(0xf4f4f0,.8,0),-4,-14),x,.062,-157)});
+ for(var z=-54;z>-290;z-=46)[-13,13].forEach(function(x){cy(.15,.2,12,0xc3c8d2,x,6,z,6);bx(1.4,.4,.8,new THREE.MeshBasicMaterial({color:0xffffee}),x*.92,12.2,z)});
+
+ /* ---------- instalaciones ---------- */
+ var roofM=std(0x9aa1ad,.8,.2),vabSide=new THREE.MeshStandardMaterial({map:vabTex(false),roughness:.8,metalness:.1}),vabFr=new THREE.MeshStandardMaterial({map:vabTex(true),roughness:.8,metalness:.1});
+ function bld(w,h,d,x,z,fr,sd){return put(new THREE.Mesh(new THREE.BoxGeometry(w,h,d),[sd,sd,roofM,roofM,fr,sd]),x,h/2,z)}
+ bld(96,74,80,-230,-640,vabFr,vabSide);bld(52,36,60,-318,-625,vabSide,vabSide);bld(40,22,30,-110,-545,vabSide,vabSide);
+ var lccM=new THREE.MeshStandardMaterial({map:lccTex(),roughness:.7,metalness:.1});
+ bld(60,15,26,150,-520,lccM,lccM);bx(8,3,8,0x9aa1ad,138,16.5,-520);cy(.35,.35,14,0xcfd3da,162,22,-520,8);beacon(162,29.5,-520);
+ for(var i=0;i<7;i++){var vx=118+i*7;bx(4.4,1.7,2.1,i%3?0xf2f4f8:0xd8d8d8,vx,1.1,-496);bx(1.5,1.3,2,0x27476e,vx+1.4,1.95,-496)}
+ /* torre de agua de supresión de sonido */
+ (function(){var x=-62,z=-352;[[-3.5,-3.5],[3.5,-3.5],[-3.5,3.5],[3.5,3.5]].forEach(function(p){cy(.45,.55,26,0xb9bec8,x+p[0],13,z+p[1],8)});
+  for(var y=7;y<26;y+=6){bx(8,.3,.3,0xb9bec8,x,y,z-3.5);bx(8,.3,.3,0xb9bec8,x,y,z+3.5);bx(.3,.3,8,0xb9bec8,x-3.5,y,z);bx(.3,.3,8,0xb9bec8,x+3.5,y,z)}
+  cy(6,6,9,0xe9edf4,x,31,z,32);cy(6.05,6.05,1.4,0xe8590c,x,31,z,32);cy(0,6,4,0xd9dee8,x,37.5,z,32)}());
+ /* pararrayos */
+ [[-95,-296],[95,-296],[40,-395]].forEach(function(p){cy(.25,.7,70,0xc3c8d2,p[0],35,p[1],8);cy(0,.25,7,0xc3c8d2,p[0],73.5,p[1],8);bx(5,.3,.3,0xc3c8d2,p[0],60,p[1]);bx(.3,.3,5,0xc3c8d2,p[0],60,p[1]);beacon(p[0],77.4,p[1])});
+ /* tanques esféricos de propelente y tubería hacia la plataforma */
+ [[120,-398],[148,-398]].forEach(function(p){put(new THREE.Mesh(new THREE.SphereGeometry(8,32,20),std(0xe9edf4,.3,.45)),p[0],15,p[1]);
+  for(var k=0;k<6;k++){var a=k/6*6.283;cy(.45,.55,12,0xb9bec8,p[0]+Math.cos(a)*6,6,p[1]+Math.sin(a)*6,8)}
+  var t=new THREE.Mesh(new THREE.TorusGeometry(8.02,.18,6,40),std(0xe8590c,.5,.2));t.rotation.x=Math.PI/2;put(t,p[0],15,p[1])});
+ (function(){var x0=134,z0=-392,x1=16,z1=-306,dx=x1-x0,dz=z1-z0,L=Math.sqrt(dx*dx+dz*dz),g=new THREE.Group();g.position.set((x0+x1)/2,2.2,(z0+z1)/2);g.rotation.y=Math.atan2(dx,dz);
+  var p=new THREE.Mesh(new THREE.CylinderGeometry(.7,.7,L,12),std(0xdde2ea,.4,.5));p.rotation.x=Math.PI/2;g.add(p);
+  var p2=new THREE.Mesh(new THREE.CylinderGeometry(.45,.45,L,10),std(0xc9cfd9,.4,.5));p2.rotation.x=Math.PI/2;p2.position.y=1.6;g.add(p2);site.add(g);
+  for(var k=1;k<6;k++){var t=k/6;cy(.3,.3,2.2,0x8a93a3,x0+dx*t,1.1,z0+dz*t,6)}}());
+ /* antenas parabólicas */
+ [[205,-330,-.9,.4],[236,-356,-1.0,-.3]].forEach(function(p){cy(1.6,2.4,10,0xcfd5df,p[0],5,p[1],12);
+  var geo=new THREE.SphereGeometry(9,32,10,0,Math.PI*2,Math.PI-.6,.6);geo.translate(0,9,0);
+  var d=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0xf2f4f8,roughness:.4,metalness:.3,side:THREE.DoubleSide}));d.rotation.set(p[2],p[3],0);put(d,p[0],11,p[1])});
+ /* banderas con movimiento suave */
+ var flagTx=ctex(flagCv(260,136)),flags=[];
+ [[-40,-262],[108,-500]].forEach(function(p,i){cy(.14,.18,16,0xe8ecf2,p[0],8,p[1],8);var g=new THREE.Group();g.position.set(p[0],14.4,p[1]);g.userData.r0=-.2+i*.5;
+  var cl=new THREE.Mesh(new THREE.PlaneGeometry(6,3.2),new THREE.MeshBasicMaterial({map:flagTx,side:THREE.DoubleSide}));cl.position.x=3.1;g.add(cl);site.add(g);flags.push(g)});
+
+ /* ---------- paisaje: lago, colinas lejanas y arboleda ---------- */
+ var shore=new THREE.Mesh(new THREE.CircleGeometry(1,40),lat(std(0xcdbd8a,1,0),-1,-3));shore.scale.set(300,185,1);shore.rotation.x=-Math.PI/2;put(shore,640,.03,-830);
+ var lake=new THREE.Mesh(new THREE.CircleGeometry(1,40),lat(std(0x3b79ad,.12,.25),-2,-6));lake.scale.set(275,160,1);lake.rotation.x=-Math.PI/2;put(lake,640,.04,-830);
+ [[-620,-1250,330,.2],[-180,-1380,380,.17],[330,-1320,360,.19],[780,-1200,320,.22],[1050,-880,300,.2],[-950,-900,320,.2]].forEach(function(h,i){
+  var m=new THREE.Mesh(new THREE.SphereGeometry(h[2],20,10),std(i%2?0x59775a:0x66845c,1,0));m.scale.y=h[3];put(m,h[0],-4,h[1])});
+ (function(){var TN=150,tk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.5,.8,7,6),std(0x5b4430,1,0),TN),cr=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,1),std(0xffffff,1,0),TN),
+   m4=new THREE.Matrix4(),q=new THREE.Quaternion(),pp=new THREE.Vector3(),ss=new THREE.Vector3(),cl=new THREE.Color(),n=0,tries=0;
+  while(n<TN&&tries<4000){tries++;var a=rnd()*6.283,rr=430+Math.pow(rnd(),.8)*950,tx=Math.cos(a)*rr,tz=RZ+Math.sin(a)*rr;
+   if(Math.abs(tx)>1450||tz<-1600||tz>1300)continue;
+   if(Math.abs(tx+230)<95&&Math.abs(tz+640)<80)continue;if(Math.abs(tx+318)<45&&Math.abs(tz+625)<50)continue;
+   var lx=(tx-640)/290,lz=(tz+830)/170;if(lx*lx+lz*lz<1)continue;
+   var hs=.7+rnd()*.7,cs=2.2+rnd()*2.4;q.setFromAxisAngle(UP0,rnd()*6.28);
+   pp.set(tx,3.5*hs,tz);ss.set(hs,hs,hs);m4.compose(pp,q,ss);tk.setMatrixAt(n,m4);
+   pp.set(tx,7*hs+cs*.55,tz);ss.set(cs,cs*.85,cs);m4.compose(pp,q,ss);cr.setMatrixAt(n,m4);
+   cl.setHSL(.24+rnd()*.09,.38+rnd()*.2,.2+rnd()*.12);cr.setColorAt(n,cl);n++}
+  tk.count=cr.count=n;tk.frustumCulled=cr.frustumCulled=false;site.add(tk);site.add(cr)}());
+
+ return{site:site,update:function(fy,t){
+  var o=1-clamp((fy-500)/1700,0,1);dome.visible=o>.01;dome.material.opacity=o;dome.position.copy(cam.position);
+  clouds.visible=fy<1500;site.visible=fy<1600;
+  beaconMat.color.setHex((t%1.6)<.8?0xff2a1a:0x4a0a06);
+  for(var i=0;i<flags.length;i++)flags[i].rotation.y=flags[i].userData.r0+Math.sin(t*1.3+i)*.14}}
+}());
+
+
+/* ===== Hangar ===== */
+var fl=mesh(new THREE.PlaneGeometry(56,56),0x5d6470,0,.01,0);fl.rotation.x=-Math.PI/2;scene.add(fl);
+var gr=new THREE.GridHelper(56,28,0x7b8494,0x7b8494);gr.position.y=.02;scene.add(gr);
+var ce=mesh(new THREE.PlaneGeometry(56,56),0xdfe4ec,0,30,0);ce.rotation.x=Math.PI/2;scene.add(ce);
+[[0,-28,56,.6],[0,28,56,.6],[-28,0,.6,56],[28,0,.6,56]].forEach(function(w){box(w[2],30,w[3],0xcfd6e0,w[0],15,w[1]);box(w[2]+.1,1.6,w[3]+.1,0x0b3d91,w[0],4,w[1])});
+function sign(t,s,w,h,x,y,z,ry){var c=document.createElement("canvas");c.width=1024;c.height=256;var g=c.getContext("2d");g.fillStyle="#0b3d91";g.fillRect(0,0,1024,256);g.fillStyle="#fff";g.textAlign="center";g.font="bold 130px Arial";g.fillText(t,512,150);g.font="bold 42px Arial";g.fillText(s,512,215);
+ var m=mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)}),x,y,z);m.rotation.y=ry||0;scene.add(m)}
+sign("NASA","CENTRO DE ENSAMBLAJE · HANGAR 7",20,5,0,18,-27.65,0);sign("NASA","SEGURIDAD PRIMERO",14,3.5,0,16,27.65,Math.PI);sign("ZONA","PRUEBAS DE MOTORES",10,2.6,27.65,12,-12,-Math.PI/2);sign("ZONA","ALMACÉN DE PIEZAS",10,2.6,-27.65,12,10,Math.PI/2);
+var lm=new THREE.MeshBasicMaterial({color:0xffffff});
+for(var i=0;i<16;i++)box(4,.2,4,lm,(i%4-1.5)*12,29.8,(Math.floor(i/4)-1.5)*12);
+[-20,0,20].forEach(function(z){box(56,1.2,1,0x778,0,28.5,z)});[-14,14].forEach(function(x){box(1,1.2,56,0x778,x,28.5,0)});
+for(var z=-18;z<=18;z+=12){box(.2,5,7,new THREE.MeshBasicMaterial({color:0xbfe2ff}),27.65,22,z);box(.2,5,7,new THREE.MeshBasicMaterial({color:0xbfe2ff}),-27.65,22,z)}
+box(56,1.2,1.8,0xf2c230,0,26,RZ0);box(2.4,1.6,2.4,0x333a48,0,26,RZ0);box(.08,5,.08,0x111111,0,23,RZ0);scene.add(mesh(new THREE.SphereGeometry(.4,12,10),0xf2c230,0,20.4,RZ0));
+var ring=mesh(new THREE.RingGeometry(7,7.4,48),0xf2c230,0,.03,RZ0);ring.rotation.x=-Math.PI/2;scene.add(ring);
+scene.add(cyl(3.3,3.5,.45,0x777f8c,0,.225,RZ0,40));
+[-6,6].forEach(function(x){[-1.4,1.4].forEach(function(dz){box(.5,22,.5,0xf2c230,x,11,RZ0+dz)});[5,10,15,20].forEach(function(y){box(.4,.3,3.2,0xf2c230,x,y,RZ0);box(3,.3,3.2,0xc7ccd6,x*.62,y,RZ0)})});
+[-18,-4,10].forEach(function(z){var t=cyl(2.2,2.2,9,0xe9edf4,-23,3,z,32);t.rotation.x=Math.PI/2;scene.add(t);[-4.5,4.5].forEach(function(d){scene.add(mesh(new THREE.SphereGeometry(2.2,24,16),0xe9edf4,-23,3,z+d))});
+ var tr=mesh(new THREE.TorusGeometry(2.22,.14,8,32),0xe8590c,-23,3,z);scene.add(tr);box(1,1,6,0x555c69,-23,.5,z-2);box(1,1,6,0x555c69,-23,.5,z+2)});
+for(var i=0;i<12;i++){scene.add(cyl(.5,.5,1.2,i%2?0xe8590c:0x2f5fd0,21+(i%3)*1.3,.6,-22+Math.floor(i/3)*1.3,16))}
+[[24,.9,-16],[24,.9,-19.5],[22,.9,-24],[-22,.9,-24]].forEach(function(p){box(1.8,1.8,1.8,0x8a6a3a,p[0],p[1],p[2])});box(1.8,1.8,1.8,0x8a6a3a,24,2.7,-16);
+for(var z=14;z<=24;z+=5){box(2.2,1,5,0x8a93a3,25.5,.5,z);box(.2,1.1,1.4,new THREE.MeshBasicMaterial({color:0x4aa8ff}),26.5,1.7,z);box(.2,.7,1,0xc92a3a,25.5,1.3,z+1.5)}
+/* mesa de piezas */
+box(30,1,3.8,0x8a93a3,0,.5,10);box(30.4,.15,4.2,0x2b3140,0,1.05,10);
+/* ===== Partículas (fuego y humo) ===== */
+var VS="attribute float aSize;attribute vec4 aCol;varying vec4 vCol;uniform float uH;void main(){vCol=aCol;vec4 mv=modelViewMatrix*vec4(position,1.);gl_PointSize=aSize*uH*.5*projectionMatrix[1][1]/(-mv.z);gl_Position=projectionMatrix*mv;}";
+var FS="varying vec4 vCol;void main(){float d=length(gl_PointCoord-.5)*2.;if(d>1.)discard;float a=1.-d;gl_FragColor=vec4(vCol.rgb,vCol.a*a*a);}";
+function PS(n,add){var g=new THREE.BufferGeometry(),P=new Float32Array(n*3),C=new Float32Array(n*4),S=new Float32Array(n),V=new Float32Array(n*3),A=new Float32Array(n).fill(1),Lf=new Float32Array(n),S0=new Float32Array(n),S1=new Float32Array(n),idx=0;
+ g.setAttribute("position",new THREE.BufferAttribute(P,3));g.setAttribute("aCol",new THREE.BufferAttribute(C,4));g.setAttribute("aSize",new THREE.BufferAttribute(S,1));
+ var mat=new THREE.ShaderMaterial({uniforms:{uH:{value:600}},vertexShader:VS,fragmentShader:FS,transparent:true,depthWrite:false,blending:add?THREE.AdditiveBlending:THREE.NormalBlending});
+ var pts=new THREE.Points(g,mat);pts.frustumCulled=false;scene.add(pts);
+ return{mat:mat,emit:function(x,y,z,vx,vy,vz,life,s0,s1){var k=idx;idx=(idx+1)%n;P[k*3]=x;P[k*3+1]=y;P[k*3+2]=z;V[k*3]=vx;V[k*3+1]=vy;V[k*3+2]=vz;A[k]=0;Lf[k]=life;S0[k]=s0;S1[k]=s1},
+  update:function(dt){for(var k=0;k<n;k++){if(A[k]>=Lf[k]){S[k]=0;continue}A[k]+=dt;var t=A[k]/Lf[k];P[k*3]+=V[k*3]*dt;P[k*3+1]+=V[k*3+1]*dt;P[k*3+2]+=V[k*3+2]*dt;
+   var dr=1-(add?1.2:.5)*dt;V[k*3]*=dr;V[k*3+1]*=dr;V[k*3+2]*=dr;S[k]=S0[k]+(S1[k]-S0[k])*t;
+   if(add){C[k*4]=1;C[k*4+1]=.95-.7*Math.pow(t,.7);C[k*4+2]=Math.max(.05,.7-.7*t*1.2);C[k*4+3]=(1-t)*.9}
+   else{var gr=.9-.5*t;C[k*4]=gr;C[k*4+1]=gr;C[k*4+2]=gr*1.02;C[k*4+3]=.55*(1-t)*Math.min(1,A[k]*3)}}
+   g.attributes.position.needsUpdate=g.attributes.aCol.needsUpdate=g.attributes.aSize.needsUpdate=true}}}
+var fire=PS(1000,true),smoke=PS(1500,false);
+var plight=new THREE.PointLight(0xff8a3d,0,150);scene.add(plight);
+
+/* ===== Piezas del cohete (detalladas) ===== */
+function bodyTex(band,logo){var c=document.createElement("canvas");c.width=256;c.height=512;var g=c.getContext("2d");g.fillStyle="#f4f6fb";g.fillRect(0,0,256,512);g.fillStyle=band;g.fillRect(0,420,256,92);g.fillStyle="#c8cfdd";for(var y=40;y<420;y+=60)g.fillRect(0,y,256,2);
+ if(logo){g.fillStyle="#d1261b";g.font="bold 70px Arial";g.save();g.translate(80,330);g.rotate(-Math.PI/2);g.fillText("NASA",0,0);g.restore()}return new THREE.CanvasTexture(c)}
+function bodyMat(band,logo){return new THREE.MeshStandardMaterial({map:bodyTex(band,logo),roughness:.45,metalness:.15})}
+function bell(s,x,z){var pts=[];for(var i=0;i<=12;i++){var y=i/12;pts.push(new THREE.Vector2(.1+.26*Math.pow(1-y,1.6),y))}
+ var g=new THREE.Group();g.add(mesh(new THREE.LatheGeometry(pts,24),M(0x4a4f5a,.8,.35)));var r=mesh(new THREE.TorusGeometry(.36,.025,8,24),0xb87333);r.rotation.x=Math.PI/2;g.add(r);g.scale.setScalar(s);g.position.set(x,1-s,z);return g}
+function gridTex(){var c=document.createElement("canvas");c.width=128;c.height=64;var g=c.getContext("2d");g.fillStyle="#1a3b8a";g.fillRect(0,0,128,64);g.strokeStyle="#7fa6ff";g.lineWidth=2;for(var x=0;x<=128;x+=16){g.beginPath();g.moveTo(x,0);g.lineTo(x,64);g.stroke()}for(var y=0;y<=64;y+=16){g.beginPath();g.moveTo(0,y);g.lineTo(128,y);g.stroke()}return new THREE.CanvasTexture(c)}
+var DEF=[
+ {id:"motor",name:"Motor y tobera",col:"#4a4f5a",h:1.2,fn:"quema el combustible y expulsa los gases hacia abajo para generar empuje",mk:function(g){g.add(cyl(.6,.6,.2,0x2a303f,0,1.1,0));g.add(bell(1,0,0));[[.3,.3],[-.3,.3],[.3,-.3],[-.3,-.3]].forEach(function(p){g.add(bell(.62,p[0],p[1]))})}},
+ {id:"s1",name:"Primera etapa",col:"#f1f3f8",h:3,fn:"guarda el combustible y da el mayor empuje para salir de la atmósfera densa",mk:function(g){g.add(mesh(new THREE.CylinderGeometry(.6,.6,3,32),bodyMat("#14161d",true),0,1.5,0));
+  [.5,1.5,2.5].forEach(function(y){var t=mesh(new THREE.TorusGeometry(.6,.025,8,32),0x9aa1ad,0,y,0);t.rotation.x=Math.PI/2;g.add(t)});
+  [0,2.1,4.2].forEach(function(a){g.add(cyl(.035,.035,2.7,0x777f8c,Math.cos(a)*.63,1.5,Math.sin(a)*.63,8))});
+  [0,1,2,3].forEach(function(k){var a=k*Math.PI/2,f=box(.55,.9,.05,0x1b2235,0,0,0);scene.remove(f);f.position.set(Math.cos(a)*.85,.45,Math.sin(a)*.85);f.rotation.y=-a;g.add(f)})}},
+ {id:"inter",name:"Interetapa",col:"#1b2235",h:.4,fn:"une las dos etapas y contiene el mecanismo que las separa",mk:function(g){g.add(cyl(.6,.6,.4,0x2a303f,0,.2,0,32));for(var i=0;i<16;i++){var a=i/16*6.283;g.add(mesh(new THREE.BoxGeometry(.05,.05,.05),0xc7ccd6,Math.cos(a)*.61,.06,Math.sin(a)*.61));g.add(mesh(new THREE.BoxGeometry(.05,.05,.05),0xc7ccd6,Math.cos(a)*.61,.34,Math.sin(a)*.61))}
+  var t=mesh(new THREE.TorusGeometry(.61,.02,8,32),0xf2c230,0,.2,0);t.rotation.x=Math.PI/2;g.add(t)}},
+ {id:"s2",name:"Segunda etapa",col:"#e8590c",h:2,fn:"sigue acelerando en el vacío y lleva la carga hasta la órbita",mk:function(g){g.add(mesh(new THREE.CylinderGeometry(.6,.6,2,32),bodyMat("#e8590c",false),0,1,0));
+  [.5,1.3].forEach(function(y){var t=mesh(new THREE.TorusGeometry(.6,.025,8,32),0x9aa1ad,0,y,0);t.rotation.x=Math.PI/2;g.add(t)});[0,2.1,4.2].forEach(function(a){g.add(cyl(.03,.03,1.7,0x777f8c,Math.cos(a)*.63,1,Math.sin(a)*.63,8))})}},
+ {id:"pay",name:"Carga útil",col:"#f2c230",h:.6,fn:"es el satélite o instrumento que queremos llevar al espacio",mk:function(g){g.add(mesh(new THREE.BoxGeometry(.5,.5,.5),M(0xd4a82b,.9,.3),0,.25,0));g.add(mesh(new THREE.BoxGeometry(.54,.06,.54),0x333a48,0,.55,0));
+  g.add(mesh(new THREE.ConeGeometry(.14,.1,16),0xdfe5f2,0,.62,0));var pm=new THREE.MeshStandardMaterial({map:gridTex(),roughness:.4,metalness:.4,side:THREE.DoubleSide});g.userData.panels=[];
+  [-1,1].forEach(function(s){var pv=new THREE.Group();pv.position.set(s*.25,.3,0);pv.add(mesh(new THREE.BoxGeometry(1.3,.02,.45),pm,s*.65,0,0));pv.scale.x=.08;g.add(pv);g.userData.panels.push(pv)})}},
+ {id:"fair",name:"Cofia",col:"#dfe5f2",h:1.6,fn:"protege la carga durante el ascenso y se abre al salir de la atmósfera",mk:function(g){var pts=[];for(var i=0;i<=18;i++){var t=i/18;pts.push(new THREE.Vector2(.62*Math.pow(1-Math.pow(t,2.1),.75),1.6*t))}
+  for(var k=0;k<2;k++){var h=mesh(new THREE.LatheGeometry(pts,24,k*Math.PI,Math.PI),M(0xeef1f8,.3,.4));g.add(h);g.userData["h"+k]=h}}}
+];
+var rocket=new THREE.Group();rocket.position.set(0,0,RZ0);scene.add(rocket);
+var bases=[],yy=.45;DEF.forEach(function(d,i){if(d.id==="fair"){bases.push(bases[i-1])}else{bases.push(yy);yy+=d.h*K}});
+var parts=[],shelf=shuffle([0,1,2,3,4,5]),chips=[];
+shelf.forEach(function(di,k){var d=DEF[di],g=new THREE.Group();d.mk(g);g.userData.i=di;g.position.set((k-2.5)*4.6,1.1,10);g.scale.setScalar(TS);scene.add(g);
+ var pl=box(2.6,.15,2.6,0x2b3140,(k-2.5)*4.6,1.12,10);
+ var l=document.createElement("div");l.className="lbl";l.textContent=(k+1)+". "+d.name;lblBox.appendChild(l);g.userData.l=l;parts[di]=g;
+ var c=document.createElement("button");c.className="chip";c.innerHTML="<i style=\"background:"+d.col+"\"></i>";c.appendChild(document.createTextNode((k+1)+". "+d.name));
+ c.title=d.fn;
+ c.onclick=function(){choose(di)};catEl.appendChild(c);chips[di]=c});
+
+/* ===== Primera persona ===== */
+var px=0,pz=22,yaw=0,pitch=0,launch=false,drag=null,keys={},ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),baseFov=60;
+function resize(){var w=app.clientWidth,h=app.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h;baseFov=cam.aspect<1?75:60;cam.fov=baseFov;cam.updateProjectionMatrix();fire.mat.uniforms.uH.value=smoke.mat.uniforms.uH.value=cv.height}
+window.addEventListener("resize",resize);
+cv.addEventListener("pointerdown",function(e){drag={x:e.clientX,y:e.clientY,m:0}});
+cv.addEventListener("pointermove",function(e){if(!drag)return;var dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.m+=Math.abs(dx)+Math.abs(dy);drag.x=e.clientX;drag.y=e.clientY;
+ if(!launch&&drag.m>6){yaw-=dx*.005;pitch=clamp(pitch-dy*.004,-1.2,1.2)}});
+cv.addEventListener("pointerup",function(e){if(drag&&drag.m<6)pick(e);drag=null});
+window.addEventListener("keydown",function(e){keys[e.key.toLowerCase()]=true});window.addEventListener("keyup",function(e){keys[e.key.toLowerCase()]=false});
+Array.prototype.forEach.call(padEl.children,function(b){var k=b.getAttribute("data-k");b.addEventListener("pointerdown",function(){keys[k]=true});["pointerup","pointerleave","pointercancel"].forEach(function(ev){b.addEventListener(ev,function(){keys[k]=false})})});
+var camMode="ground";camBtn.onclick=function(){camMode=camMode==="ground"?"chase":"ground";camBtn.textContent=camMode==="ground"?"Cámara: suelo":"Cámara: seguimiento"};
+
+/* ===== Ensamblaje ===== */
+var ai=0,busy=false,mode="intro";
+function askAssembly(){mode="assembly";stepEl.textContent="Ensamblaje "+(ai+1)+" de "+DEF.length;say("Necesito la pieza que "+DEF[ai].fn+". Elígela en el catálogo o tócala en la mesa.")}
+function pick(e){if(mode!=="assembly"||busy)return;var r=cv.getBoundingClientRect();
+ mouse.set((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height)*2+1);ray.setFromCamera(mouse,cam);
+ var hit=ray.intersectObjects(parts.filter(function(p){return !p.userData.done&&p.parent===scene}),true)[0];if(!hit)return;
+ var o=hit.object;while(o&&o.userData.i===undefined)o=o.parent;if(o)choose(o.userData.i)}
+function choose(i){if(mode!=="assembly"||busy||parts[i].userData.done)return;var d=DEF[i],o=parts[i];
+ if(i===ai){o.userData.done=true;o.userData.l.style.display="none";chips[i].disabled=true;
+  o.userData.tw={t:0,p0:o.position.clone(),p1:new THREE.Vector3(0,bases[ai],RZ0)};busy=true;ai++;
+  say("¡Exacto! Esa es la "+d.name.toLowerCase()+": "+d.fn+".");
+  setTimeout(function(){busy=false;if(ai<DEF.length)askAssembly();else{mode="transition";startLaunch()}},1800)}
+ else{chips[i].classList.add("bad");setTimeout(function(){chips[i].classList.remove("bad")},600);say("Esa es la "+d.name.toLowerCase()+": "+d.fn+". Busca la pieza que "+DEF[ai].fn+".")}}
+
+/* ===== Despegue ===== */
+var lp=0,vy=0,drift=0,igT=0,li=0,debris=[],tgtY=6,satT=-1,layerIdx=0,acF=0,acS=0,acT=0,autoChase=false;
+var LAYERS=["Troposfera","Estratosfera","Mesosfera","Termosfera","Espacio · Línea de Kármán"],LTH=[300,1250,2125,2500];
+function detach(o,v,w,g){scene.attach(o);debris.push({o:o,v:v,w:w,g:g})}
+function heading(){return clamp((rocket.position.y-150)/2000,0,1)}
+function rvel(){if(transit)return hv.clone().multiplyScalar(vy);var th=heading();return new THREE.Vector3(Math.sin(th)*vy,Math.cos(th)*vy,0)}
+function burst(){for(var i=0;i<110;i++){var a=rnd()*6.283,s=30+rnd()*80;fire.emit(RX+Math.cos(a)*rnd()*3,1+rnd()*3,RZ+Math.sin(a)*rnd()*3,Math.cos(a)*s,5+rnd()*16,Math.sin(a)*s,.7+rnd()*.9,8+rnd()*6,24)}
+ for(var i=0;i<160;i++){var a=rnd()*6.283,s=10+rnd()*50;smoke.emit(RX+Math.cos(a)*rnd()*4,1+rnd()*3,RZ+Math.sin(a)*rnd()*4,Math.cos(a)*s,2+rnd()*8,Math.sin(a)*s,6+rnd()*6,10,42)}}
+var L=[
+ {q:"El cohete está armado. ¿Qué hacemos primero?",ok:"Cuenta regresiva y revisión final",hint:"Antes de encender nada, el equipo confirma que todo esté bien.",fact:"Se cargan los propelentes y se revisan los sistemas y el clima.",dur:3800,go:function(){fx("3",900);setTimeout(function(){fx("2",900)},900);setTimeout(function(){fx("1",900)},1800);setTimeout(function(){fx("Cero",900)},2700)}},
+ {q:"Llegamos a cero. ¿Qué sigue?",ok:"Ignición de los motores",hint:"Hay que generar empuje.",fact:"Los motores se encienden y el empuje crece con el cohete aún sujeto.",dur:3600,go:function(){lp=1;igT=0;burst();fx("Ignición",2600)}},
+ {q:"El empuje ya supera al peso. ¿Qué pasa ahora?",ok:"Despegue: se sueltan las sujeciones",hint:"El cohete abandona la plataforma.",fact:"Es el despegue, o liftoff.",dur:3600,go:function(){lp=2;fx("Despegue",2600)}},
+ {q:"Subimos tan rápido que el aire presiona la estructura al máximo. ¿Cómo se llama ese momento?",ok:"Max Q",hint:"Es el punto de máxima presión dinámica.",fact:"En Max Q la estructura soporta su mayor esfuerzo aerodinámico.",dur:3400,go:function(){lp=3;fx("Max Q",2400)}},
+ {q:"El combustible de la primera etapa se acaba. ¿Qué hacemos?",ok:"Apagar motores y separar la primera etapa",hint:"Ya no sirve y solo agrega peso.",fact:"El apagado se llama MECO. Después se separa la primera etapa.",dur:4000,go:function(){lp=4;fx("Separación de etapas",2800);var v=rvel(),th=heading();
+   [parts[0],parts[1],parts[2]].forEach(function(p,i){detach(p,new THREE.Vector3(v.x*.8+(i-1)*3,v.y*.8,(i-1)*2),new THREE.Vector3(.4,.1,.6),35)});
+   for(var i=0;i<60;i++)smoke.emit(rocket.position.x,rocket.position.y+bases[3],rocket.position.z,(rnd()-.5)*30,(rnd()-.5)*20,(rnd()-.5)*30,3,3,14);
+   if(!autoChase){autoChase=true;camMode="chase";camBtn.textContent="Cámara: seguimiento"}}},
+ {q:"Casi no hay atmósfera. ¿Qué descartamos?",ok:"La cofia protectora",hint:"Protege la carga del aire.",fact:"La cofia se abre en dos mitades y se desprende.",dur:3600,go:function(){lp=5;fx("Separación de la cofia",2800);var f=parts[5],v=rvel();[f.userData.h0,f.userData.h1].forEach(function(h,k){detach(h,new THREE.Vector3(v.x*.95+(k?7:-7),v.y*.95,0),new THREE.Vector3(0,0,k?-1:1),3)})}},
+ {q:"La segunda etapa alcanza la velocidad orbital y apaga sus motores. ¿Cómo se llama esa fase?",ok:"Inserción orbital",hint:"El cohete queda moviéndose alrededor de la Tierra.",fact:"En órbita el cohete avanza sin empuje, en caída libre alrededor de la Tierra.",dur:3800,go:function(){lp=6;fx("Inserción orbital",2800)}},
+ {q:"Estamos en órbita. ¿Último paso?",ok:"Separar la carga útil",hint:"La misión es dejar el satélite en su órbita.",fact:"La carga útil queda libre y despliega sus paneles solares.",dur:4800,go:function(){lp=7;fx("Carga útil liberada",2800);var v=rvel();detach(parts[4],new THREE.Vector3(v.x+Math.sin(heading())*9,v.y+Math.cos(heading())*9,0),new THREE.Vector3(0,.6,0),0);satT=0;drawOrbitMap()}}
+];
+var orbitKind="leo",missionOutcome="success";
+/* dibuja el trazo de la órbita final alrededor de la Tierra, como un mapa
+   2D aparte (canvas propio, sin tocar la cámara/física 3D de arriba). Solo
+   se llama cuando la carga realmente queda liberada en su órbita. */
+var ORBIT_R={leo:40,sso:48,geo:72,l1:92};
+function drawOrbitMap(){
+ var box=document.getElementById("orbitMap"),cv=box.firstElementChild,g=cv.getContext("2d"),W=cv.width,H=cv.height,cx=W/2,cy=H/2;
+ g.clearRect(0,0,W,H);
+ var eg=g.createRadialGradient(cx-4,cy-4,2,cx,cy,13);eg.addColorStop(0,"#6fb8ff");eg.addColorStop(1,"#1b4f8a");
+ g.fillStyle=eg;g.beginPath();g.arc(cx,cy,13,0,6.283);g.fill();
+ var rx=ORBIT_R[orbitKind]||ORBIT_R.leo,ry=rx*.62;
+ g.strokeStyle="#e8590c";g.lineWidth=2;if(orbitKind!=="geo")g.setLineDash([5,5]);
+ g.beginPath();g.ellipse(cx,cy,rx,ry,0,0,6.283);g.stroke();g.setLineDash([]);
+ g.fillStyle="#0f8a6e";g.beginPath();g.arc(cx+rx,cy,3,0,6.283);g.fill();
+ document.getElementById("orbitMapLbl").textContent="Curso orbital: "+M0.name;
+ box.style.display="block"}
+/* ===== Misiones ===== */
+var MS=[
+ {name:"Órbita terrestre",icon:"🛰️",desc:"Coloca un satélite en órbita alrededor de la Tierra.",meta:"8 fases · Corta",pay:"Satélite",payFn:"es el satélite que queremos dejar en órbita alrededor de la Tierra",deep:false},
+ {name:"La Luna",at:"la Luna",icon:"🌙",desc:"Envía un módulo lunar hasta la Luna con una inyección translunar.",meta:"9 fases · Media",pay:"Módulo lunar",payFn:"es el módulo que descenderá sobre la superficie de la Luna",deep:true,body:"moon",R:650,km:384400,tli:"Inyección translunar"},
+ {name:"Marte",at:"Marte",icon:"🔴",desc:"Envía un rover a Marte con una inyección transmarciana.",meta:"9 fases · Larga",pay:"Rover marciano",payFn:"es el rover que explorará la superficie de Marte",deep:true,body:"mars",R:850,km:225000000,tli:"Inyección transmarciana"}
+];
+var M0=MS[0],transit=false,hv=new THREE.Vector3(0,1,0),UPV=new THREE.Vector3(0,1,0),v3b=new THREE.Vector3(),tgt=null,D0=5500,tdist=1e9,look=new THREE.Vector3(0,6,RZ),TAGS=["Cuenta regresiva","Ignición","Despegue","Max Q","Separación de etapas","Cofia","Inserción orbital"];
+var arrived=false,landing=false,landed=false,lv=9,acL=0,acD=0,patch=null,LEG=.63,lqt=new THREE.Quaternion(),ln=new THREE.Vector3(),lt1=new THREE.Vector3(),lt2=new THREE.Vector3();
+function mkBody(kind,R){var W=1024,H=512,c=document.createElement("canvas");c.width=W;c.height=H;var g=c.getContext("2d"),moon=kind==="moon";
+ g.fillStyle=moon?"#9b9a96":"#b5532f";g.fillRect(0,0,W,H);
+ function blob(x,y,rx,ry,col,a){g.globalAlpha=a;g.fillStyle=col;g.beginPath();g.ellipse(x,y,rx,ry,rnd()*3,0,6.283);g.fill()}
+ if(moon){for(var i=0;i<16;i++)blob(rnd()*W,70+rnd()*H*.7,40+rnd()*110,30+rnd()*70,"#5f5e5c",.5);
+  for(var i=0;i<500;i++)blob(rnd()*W,rnd()*H,2+rnd()*14,2+rnd()*10,rnd()<.5?"#7a7977":"#bdbbb6",.25);
+  for(var i=0;i<300;i++){var x=rnd()*W,y=20+rnd()*(H-40),r=2+Math.pow(rnd(),2.5)*34;g.globalAlpha=.32;g.fillStyle="#58575a";g.beginPath();g.arc(x,y,r,0,6.283);g.fill();
+   g.globalAlpha=.55;g.strokeStyle="#d2d0cb";g.lineWidth=Math.max(1,r*.16);g.beginPath();g.arc(x-r*.08,y-r*.08,r*1.04,0,6.283);g.stroke()}}
+ else{for(var i=0;i<90;i++)blob(rnd()*W,rnd()*H,10+rnd()*70,8+rnd()*34,rnd()<.5?"#7a331b":"#d98a5a",.28+rnd()*.3);
+  for(var i=0;i<4;i++)blob(120+rnd()*800,170+rnd()*170,60+rnd()*90,25+rnd()*30,"#4a2112",.4);
+  g.globalAlpha=.8;g.strokeStyle="#4a1f10";g.lineWidth=7;g.lineCap="round";g.beginPath();g.moveTo(300,262);g.quadraticCurveTo(380,250,470,276);g.stroke();
+  for(var i=0;i<120;i++){var x=rnd()*W,y=24+rnd()*(H-48),r=2+Math.pow(rnd(),2.2)*20;g.globalAlpha=.3;g.fillStyle="#6a2c18";g.beginPath();g.arc(x,y,r,0,6.283);g.fill();g.globalAlpha=.4;g.strokeStyle="#e2a77d";g.lineWidth=Math.max(1,r*.15);g.beginPath();g.arc(x,y,r*1.03,0,6.283);g.stroke()}
+  g.globalAlpha=.92;g.fillStyle="#f2ece6";g.fillRect(0,0,W,22);g.fillRect(0,H-22,W,22)}
+ g.globalAlpha=1;
+ var m=new THREE.Mesh(new THREE.SphereGeometry(R,64,48),new THREE.MeshStandardMaterial({map:new THREE.CanvasTexture(c),roughness:1,metalness:0,fog:false}));
+ if(!moon)[[1.03,.22],[1.08,.1]].forEach(function(a){m.add(new THREE.Mesh(new THREE.SphereGeometry(R*a[0],48,32),new THREE.MeshBasicMaterial({color:0xff9a6a,side:THREE.BackSide,transparent:true,opacity:a[1],blending:THREE.AdditiveBlending,depthWrite:false,fog:false})))});
+ return m}
+/* zona de aterrizaje: casquete esférico con textura fina y rocas, pegado a la superficie */
+function mkPatch(moon,R,n0){var c=document.createElement("canvas");c.width=c.height=256;var g=c.getContext("2d");g.fillStyle=moon?"#8d8c88":"#a9532f";g.fillRect(0,0,256,256);
+ for(var i=0;i<2400;i++){var v=rnd();g.globalAlpha=.25+rnd()*.35;g.fillStyle=moon?(v<.5?"#6b6a67":"#b2b0ab"):(v<.5?"#7d3a20":"#cf8a5c");var sz=1+rnd()*3;g.fillRect(rnd()*256,rnd()*256,sz,sz)}
+ for(var i=0;i<8;i++){g.globalAlpha=.12;g.fillStyle=moon?"#55544f":"#5c2a16";g.beginPath();g.ellipse(rnd()*256,rnd()*256,20+rnd()*40,12+rnd()*25,rnd()*3,0,6.283);g.fill()}
+ g.globalAlpha=1;var tx=new THREE.CanvasTexture(c);tx.wrapS=tx.wrapT=THREE.RepeatWrapping;tx.anisotropy=8;
+ var geo=new THREE.SphereGeometry(R+.12,64,14,0,Math.PI*2,0,300/R),P=geo.attributes.position,U=geo.attributes.uv;
+ for(var i=0;i<P.count;i++)U.setXY(i,P.getX(i)/16,P.getZ(i)/16);
+ var grp=new THREE.Group(),cap=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({map:tx,roughness:1,metalness:0,fog:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-6}));grp.add(cap);
+ var rg=new THREE.DodecahedronGeometry(1,0),rm=new THREE.MeshStandardMaterial({color:moon?0x77746f:0x7a3a22,roughness:1,metalness:0,fog:false});
+ for(var i=0;i<60;i++){var a=rnd()*6.283,rr=9+Math.sqrt(rnd())*160,x=Math.cos(a)*rr,z=Math.sin(a)*rr,y=Math.sqrt((R+.12)*(R+.12)-x*x-z*z),sz=.25+Math.pow(rnd(),2)*2.4,rk=new THREE.Mesh(rg,rm);
+  rk.position.set(x,y+sz*.1,z);rk.rotation.set(rnd()*3,rnd()*3,rnd()*3);rk.scale.set(sz,sz*(.5+rnd()*.5),sz*(.8+rnd()*.5));grp.add(rk)}
+ grp.quaternion.setFromUnitVectors(UP0,n0);grp.visible=false;return grp}
+function addLegs(g){for(var k=0;k<4;k++){var a=k*Math.PI/2+.785,gp=new THREE.Group();gp.position.set(Math.cos(a)*.22,.1,Math.sin(a)*.22);gp.rotation.y=-a;
+  var lg=cyl(.025,.025,.34,0xb8bec9,.08,-.12,0,8);lg.rotation.z=.55;gp.add(lg);gp.add(cyl(.07,.07,.02,0x8a929e,.16,-.275,0,12));g.add(gp)}}
+function landStep(dt){var ps=parts[4],c=tgt.position;ln.subVectors(ps.position,c);var dist=ln.length();ln.multiplyScalar(1/dist);
+ lt1.set(0,0,1).cross(ln);if(lt1.lengthSq()<1e-4)lt1.set(1,0,0);lt1.normalize();lt2.crossVectors(ln,lt1);
+ lqt.setFromUnitVectors(UP0,ln);ps.quaternion.slerp(lqt,Math.min(1,dt*2.5));
+ var alt=dist-M0.R-LEG,sbx=c.x+ln.x*(M0.R+.3),sby=c.y+ln.y*(M0.R+.3),sbz=c.z+ln.z*(M0.R+.3);
+ if(!landed){var tv=clamp(alt*.8,3,70);lv+=(tv-lv)*Math.min(1,dt*2);ps.position.addScaledVector(ln,-lv*dt);alt=ps.position.distanceTo(c)-M0.R-LEG;
+  acL+=130*dt;while(acL>=1){acL--;var s0=lv+20+rnd()*12;fire.emit(ps.position.x-ln.x*.5,ps.position.y-ln.y*.5,ps.position.z-ln.z*.5,-ln.x*s0+(rnd()-.5)*4,-ln.y*s0+(rnd()-.5)*4,-ln.z*s0+(rnd()-.5)*4,.22+rnd()*.22,1.3,.4)}
+  if(alt<30){acD+=(40+(30-alt)*5)*dt;while(acD>=1){acD--;var a=rnd()*6.283,sv=5+rnd()*14,ca=Math.cos(a),sa=Math.sin(a);
+   smoke.emit(sbx,sby,sbz,(lt1.x*ca+lt2.x*sa)*sv+ln.x*rnd()*2,(lt1.y*ca+lt2.y*sa)*sv+ln.y*rnd()*2,(lt1.z*ca+lt2.z*sa)*sv+ln.z*rnd()*2,2.5+rnd()*2,1.2,9)}}
+  plight.position.copy(ps.position).addScaledVector(ln,-2.5);plight.intensity=(alt<60?5:2.5)*(.8+rnd()*.4);
+  if(alt<=.04){landed=true;ps.position.copy(c).addScaledVector(ln,M0.R+LEG);plight.intensity=0;fx("Aterrizaje en "+M0.at,3600);
+   for(var i=0;i<90;i++){var b=rnd()*6.283,sv2=8+rnd()*20,cb=Math.cos(b),sb=Math.sin(b);smoke.emit(sbx,sby,sbz,(lt1.x*cb+lt2.x*sb)*sv2+ln.x*rnd()*3,(lt1.y*cb+lt2.y*sb)*sv2+ln.y*rnd()*3,(lt1.z*cb+lt2.z*sb)*sv2+ln.z*rnd()*3,3+rnd()*3,1.5,12)}}}}
+function buildMenu(){var box=document.getElementById("mcards");MS.forEach(function(m,i){var b=document.createElement("button");b.className="mcard";b.innerHTML="<span class=\"mi\">"+m.icon+"</span><strong>"+m.name+"</strong><span>"+m.desc+"</span><em>"+m.meta+"</em>";b.onclick=function(){selectMission(i)};box.appendChild(b)})}
+function updTL(){var it=tlEl.children;for(var i=0;i<it.length;i++)it[i].className=i<li?"done":i===li?"cur":""}
+function selectMission(i){M0=MS[i];misEl.style.display="none";document.getElementById("dlg").style.display="block";
+ DEF[4].name=M0.pay;DEF[4].fn=M0.payFn;if(M0.deep)addLegs(parts[4]);var k=shelf.indexOf(4)+1;parts[4].userData.l.textContent=k+". "+M0.pay;chips[4].lastChild.textContent=k+". "+M0.pay;chips[4].title=M0.payFn;
+ var last=L.pop();
+ if(M0.deep){
+  L.push({q:"Seguimos en órbita terrestre y queremos viajar a "+M0.at+". ¿Qué maniobra hacemos?",ok:M0.tli,hint:"Hay que reencender el motor para ganar velocidad y salir de la órbita terrestre.",fact:"El motor se reenciende para alcanzar la velocidad de escape y viajar hacia "+M0.at+".",dur:5000,go:function(){lp=7;transit=true;fx(M0.tli,2800);var th=heading();hv.set(Math.sin(th),Math.cos(th),0);tgt=mkBody(M0.body,M0.R);tgt.position.copy(rocket.position).addScaledVector(hv,D0);scene.add(tgt);
+   patch=mkPatch(M0.body==="moon",M0.R,hv.clone().negate());tgt.add(patch);camMode="chase";autoChase=true;camBtn.textContent="Cámara: seguimiento"}});
+  L.push({wait:function(){return tdist<1900},q:"Llegamos a "+M0.at+". ¿Qué hacemos con el "+M0.pay.toLowerCase()+"?",ok:"Separar el "+M0.pay.toLowerCase(),hint:"La misión es dejar la carga en su destino.",fact:"El "+M0.pay.toLowerCase()+" queda libre, frena con sus motores y se posa sobre la superficie de "+M0.at+".",dur:12500,go:function(){lp=8;fx("Carga liberada",2800);var v=rvel(),d=hv.clone().multiplyScalar(9);detach(parts[4],new THREE.Vector3(v.x+d.x,v.y+d.y,0),new THREE.Vector3(0,.6,0),0);debris.pop();satT=0;landing=true;landed=false;lv=9;if(patch)patch.visible=true}})
+ }else L.push(last);
+ var tg=TAGS.slice();if(M0.deep)tg.push(M0.tli);tg.push("Carga útil");tlEl.innerHTML=tg.map(function(t){return "<li>"+t+"</li>"}).join("");
+ say("Control de misión: misión a "+M0.name+" confirmada. Estás en primera persona: camina con W A S D, las flechas o los botones, y arrastra para mirar. Te pediré cada pieza según lo que hace.",[["Empezar",askAssembly]])}
+function shot(){var f,az=0,el=0,d=0,off=null,l=null,up=null,Y=function(y){return rocket.localToWorld(new THREE.Vector3(0,y,0))};
+ if(satT>=0&&landing){f=parts[4].position.clone();var n=f.clone().sub(tgt.position).normalize(),alt=Math.max(0,f.distanceTo(tgt.position)-M0.R-LEG);
+  off=n.clone().multiplyScalar(clamp(alt*.25,1.5,10)).add(new THREE.Vector3(0,0,clamp(12+alt*.08,13,28)));l=f.clone().addScaledVector(n,-clamp(alt*.15,.5,6));up=n}
+ else if(satT>=0){f=parts[4].position.clone();az=.6;el=.2;d=14}
+ else if(transit&&lp>=7){f=Y(bases[3]+4);var pv=new THREE.Vector3(-hv.y,hv.x,0),near=tdist<M0.R+2400;
+  off=new THREE.Vector3(0,0,near?15:12).addScaledVector(hv,near?-42:-52).addScaledVector(pv,near?-6:5);l=f.clone().addScaledVector(hv,clamp((tdist-M0.R)*.55,160,1200))}
+ else if(lp<=1){f=Y(4);az=.55;el=.08;d=lp===0?42:30}
+ else if(lp===2){f=Y(7);az=.6;el=.1;d=34}
+ else if(lp===3){f=Y(9);az=1.15;el=.1;d=38}
+ else if(lp===4){f=Y(bases[3]);az=-.7;el=.1;d=32}
+ else if(lp===5){f=Y(bases[5]+1);az=.5;el=.16;d=22}
+ else if(lp===6){f=Y(bases[3]+4);az=1;el=.3;d=60}
+ else{f=Y(bases[3]+4);az=.8;el=.25;d=70}
+ if(!l)l=f.clone();return{f:f,l:l,az:az,el:el,d:d,off:off,up:up}}
+function startLaunch(){stepEl.textContent="Plataforma de lanzamiento";say("¡Cohete ensamblado! Ahora lo llevamos a la plataforma de lanzamiento.");
+ setTimeout(function(){fadeEl.style.opacity=1;setTimeout(function(){
+  launch=true;catEl.style.display="none";padEl.style.display="none";telEl.style.display="block";camBtn.style.display="block";
+  rocket.position.set(RX,0,RZ);px=RX;pz=RZ+60;cam.position.set(RX+22,5,RZ+36);look.set(RX,4,RZ);camMode="chase";autoChase=true;camBtn.textContent="Cámara: seguimiento";tlEl.style.display="block";scene.fog.color.copy(skyDay);fadeEl.style.opacity=0;setTimeout(askLaunch,900)},800)},1900)}
+function askLaunch(){
+ if(li>=L.length){updTL();
+  if(missionOutcome==="cancelled"){
+   stepEl.textContent="Misión cancelada";say("Control de misión cancela el lanzamiento: una revisión final encontró un problema en el diseño que no se resolvió a tiempo. El cohete se queda en la plataforma.",[["Entendido",function(){location.reload()}]]);fx("Misión cancelada",3500)
+  }else if(missionOutcome==="launch_fail"){
+   stepEl.textContent="Anomalía del lanzador";
+   var rp=rocket.position;
+   for(var i=0;i<110;i++){var a=rnd()*6.283,s=20+rnd()*60;fire.emit(rp.x+Math.cos(a)*rnd()*2,rp.y+rnd()*3,rp.z+Math.sin(a)*rnd()*2,Math.cos(a)*s,4+rnd()*14,Math.sin(a)*s,.6+rnd()*.8,7+rnd()*5,20)}
+   for(var i=0;i<160;i++){var a=rnd()*6.283,s=8+rnd()*40;smoke.emit(rp.x+Math.cos(a)*rnd()*3,rp.y+rnd()*3,rp.z+Math.sin(a)*rnd()*3,Math.cos(a)*s,1+rnd()*6,Math.sin(a)*s,5+rnd()*5,9,36)}
+   lp=9;plight.intensity=7;setTimeout(function(){plight.intensity=0;rocket.visible=false},300);
+   say("¡Anomalía! El lanzador falló poco después del despegue: la misión se perdió antes de llegar a órbita.",[["Entendido",function(){location.reload()}]]);fx("Falla en el lanzamiento",3500)
+  }else if(missionOutcome==="orbit_fail"){
+   say("El cohete dejó la nave en una órbita de transferencia, pero sin el quemado de circularización se queda ahí: nunca llegó a su órbita final.",[["Entendido",function(){location.reload()}]]);fx("No se alcanzó la órbita",3500)
+  }else{
+   say("¡Misión cumplida! Ensamblaste el cohete y completaste todas las fases de la misión: "+M0.name+".",[["Jugar de nuevo",function(){location.reload()}]]);fx("Misión cumplida",3500)
+  }
+  try{window.parent.postMessage({type:"hangar:done"},"*")}catch(e){}return}
+ var it=L[li];if(it.wait&&!it.wait()){stepEl.textContent="En tránsito";say("En tránsito hacia "+M0.at+". Observa cómo se acerca el destino.");updTL();setTimeout(askLaunch,600);return}
+ stepEl.textContent="Fase "+(li+1)+" de "+L.length;updTL();
+ var lab=shuffle([it.ok].concat(shuffle(L.filter(function(x){return x!==it}).map(function(x){return x.ok})).slice(0,2)));
+ function render(m){say(m,lab.map(function(o){return [o,function(){
+  if(o===it.ok){say("¡Correcto! "+it.fact);it.go();li++;setTimeout(askLaunch,it.dur)}else render("Todavía no. "+it.hint)}]}))}
+ render(it.q)}
+
+/* ===== Ciclo ===== */
+var clock=new THREE.Clock(),v3=new THREE.Vector3(),want=new THREE.Vector3();
+function loop(){requestAnimationFrame(loop);var dt=Math.min(clock.getDelta(),.05);
+ parts.forEach(function(p){var w=p.userData.tw;if(w){w.t=Math.min(1,w.t+dt/1.2);var e=w.t*w.t*(3-2*w.t);
+   p.position.lerpVectors(w.p0,w.p1,e);p.position.y+=Math.sin(Math.PI*e)*3;p.scale.setScalar(TS+(K-TS)*e);if(w.t>=1){p.userData.tw=null;rocket.attach(p)}}
+  var l=p.userData.l;if(l&&l.style.display!=="none"){v3.copy(p.position);v3.y+=DEF[p.userData.i].h*TS+.4;v3.project(cam);
+   l.style.visibility=v3.z>1?"hidden":"visible";l.style.left=((v3.x*.5+.5)*app.clientWidth)+"px";l.style.top=((-v3.y*.5+.5)*app.clientHeight)+"px"}});
+ /* dinámica */
+ if(lp===1)igT+=dt;
+ if(lp>=2){vy=lp>=6?vy:Math.min(vy+(lp===2?4:lp===3?14:28)*dt,lp>=5?220:300)}
+ if(transit){tdist=tgt.position.distanceTo(rocket.position);if(!arrived&&tdist<M0.R+2400){arrived=true;fx("Llegada a "+M0.at,3600)}v3b.subVectors(tgt.position,rocket.position).normalize();hv.lerp(v3b,Math.min(1,dt*1.5)).normalize();vy=Math.min(vy+70*dt,450);vy=tdist<M0.R+350?0:Math.min(vy,Math.max(60,(tdist-1200)*.5))}
+ var th=heading(),rv=rvel();if(transit)rocket.quaternion.setFromUnitVectors(UPV,hv);else rocket.rotation.z=-th;
+ if(lp>=2){drift+=rv.x*dt;rocket.position.y+=rv.y*dt;rocket.position.z+=rv.z*dt}
+ var jit=lp===1?.06*Math.min(1,igT/1.5):lp===3?.1:0;
+ rocket.position.x=(launch?RX:0)+drift+(rnd()-.5)*jit;
+ var fy=rocket.position.y;
+ /* fuego, humo y luz */
+ var thrust=launch&&((lp>=1&&lp<=5)||(transit&&lp===7));rocket.updateMatrixWorld(true);
+ if(thrust){var ramp=lp===1?clamp(igT/1.6,0,1):1,sc=lp>=4?.7:1,wp=rocket.localToWorld(new THREE.Vector3(0,lp>=4?bases[3]:0,0)),dv=new THREE.Vector3(0,-1,0).applyQuaternion(rocket.quaternion),low=fy<14;
+  acF+=(lp===1?300:520)*ramp*dt;while(acF>=1){acF--;var a=rnd()*6.283,r=Math.sqrt(rnd())*1.4*sc,ox=wp.x+Math.cos(a)*r,oz=wp.z+Math.sin(a)*r;
+   if(low&&rnd()<.6){var s=18+rnd()*(lp===1?25:55);fire.emit(ox,Math.max(wp.y,.8),oz,Math.cos(a)*s,rnd()*7,Math.sin(a)*s,.5+rnd()*.6,5*sc,1.4)}
+   else{var ex=(lp===1?30:45)+rnd()*50;fire.emit(ox,wp.y,oz,rv.x+dv.x*ex+(rnd()-.5)*10,rv.y+dv.y*ex+(rnd()-.5)*6,(rnd()-.5)*10,.4+rnd()*.5,3.6*sc,.7)}}
+  if(fy<80){acS+=(lp===1?130:170)*ramp*dt;while(acS>=1){acS--;var b=rnd()*6.283,s2=8+rnd()*32;smoke.emit(RX+Math.cos(b)*rnd()*5,1+rnd()*2,RZ+Math.sin(b)*rnd()*5,Math.cos(b)*s2,1.5+rnd()*6,Math.sin(b)*s2,5+rnd()*4,7,28)}}
+  if(fy>=20&&fy<2300){acT+=80*dt;while(acT>=1){acT--;smoke.emit(wp.x,wp.y,wp.z,(rnd()-.5)*4,(rnd()-.5)*4,(rnd()-.5)*4,6,2.5*sc,10)}}
+  plight.position.set(wp.x,wp.y+3,wp.z);plight.intensity=fy<350?(lp===1?5:8)*ramp*(.8+rnd()*.4):0}else plight.intensity=0;
+ if(landing)landStep(dt);fire.update(dt);smoke.update(dt);
+ for(var i=debris.length-1;i>=0;i--){var d=debris[i];d.o.position.addScaledVector(d.v,dt);d.v.y-=d.g*dt;d.o.rotation.x+=d.w.x*dt;d.o.rotation.y+=d.w.y*dt;d.o.rotation.z+=d.w.z*dt;
+  if(d.o.position.distanceTo(cam.position)>400&&d.g>0){scene.remove(d.o);debris.splice(i,1)}}
+ if(satT>=0){satT+=dt;var pe=clamp((satT-.8)/2.2,0,1);parts[4].userData.panels.forEach(function(p){p.scale.x=.08+.92*pe})}
+ /* cámara */
+ if(!launch){
+  var f=((keys.w||keys.arrowup)?1:0)-((keys.s||keys.arrowdown)?1:0),s=((keys.d||keys.arrowright)?1:0)-((keys.a||keys.arrowleft)?1:0);
+  if(f||s){px+=(-Math.sin(yaw)*f+Math.cos(yaw)*s)*7*dt;pz+=(-Math.cos(yaw)*f-Math.sin(yaw)*s)*7*dt;px=clamp(px,-HX+1.2,HX-1.2);pz=clamp(pz,-HX+1.2,HX-1.2);
+   var dx=px,dz=pz-RZ0,r2=Math.sqrt(dx*dx+dz*dz);if(r2<3.6){px=dx/r2*3.6;pz=RZ0+dz/r2*3.6}
+   if(Math.abs(px)<15.8&&Math.abs(pz-10)<2.7){pz=pz>10?12.7:7.3}}
+  cam.position.set(px,1.7,pz);cam.rotation.set(pitch,yaw,0)
+ }else{
+  var fp=satT>=0?parts[4].position:rocket.position;
+  if(camMode==="ground"){want.set(px,1.7,pz);cam.position.lerp(want,Math.min(1,dt*3));
+   var sh=lp===1?.1*Math.min(1,igT/1.5):lp===2?Math.max(0,.08*(1-fy/80)):lp===3?.04:0;cam.position.x+=(rnd()-.5)*sh;cam.position.y+=(rnd()-.5)*sh;
+   cam.lookAt(rocket.position.x,Math.max(6,fy+6),rocket.position.z);var nf=clamp(baseFov-fy/12,12,baseFov);if(Math.abs(nf-cam.fov)>.05){cam.fov=nf;cam.updateProjectionMatrix()}}
+  else{var sh2=lp===1?.12*Math.min(1,igT/1.5):lp===2?Math.max(0,.1*(1-fy/90)):lp===3?.05:0,S=shot();
+   want.set(S.f.x+Math.sin(S.az)*S.d,Math.max(2,S.f.y+S.el*S.d),S.f.z+Math.cos(S.az)*S.d);if(S.off)want.copy(S.f).add(S.off);
+   cam.position.addScaledVector(rv,dt);look.addScaledVector(rv,dt);cam.position.lerp(want,Math.min(1,dt*3.5));cam.position.x+=(rnd()-.5)*sh2;cam.position.y+=(rnd()-.5)*sh2;
+   look.lerp(S.l,Math.min(1,dt*6));cam.up.lerp(S.up||UP0,Math.min(1,dt*2.5)).normalize();cam.lookAt(look);if(Math.abs(cam.fov-baseFov)>.05){cam.fov=baseFov;cam.updateProjectionMatrix()}}
+ }
+ /* luz en el espacio y escena de llegada */
+ arrLight.intensity+=((transit?1:0)-arrLight.intensity)*Math.min(1,dt*1.5);hemi.intensity+=((transit?.42:1.05)-hemi.intensity)*Math.min(1,dt*1.5);
+ if(transit)arrLight.position.set(-hv.x*4-hv.y*2,-hv.y*4+hv.x*2,3);
+ /* cielo y atmósfera */
+ if(fy<1200)tmpC.copy(skyDay).lerp(skyMid,fy/1200);else tmpC.copy(skyMid).lerp(skyNight,clamp((fy-1200)/1300,0,1));
+ scene.background.copy(tmpC);scene.fog.color.copy(tmpC);scene.fog.near=150+fy*3;scene.fog.far=1500+fy*40;
+ stars.material.opacity=clamp((fy-1100)/1400,0,1);stars.position.copy(cam.position);ground.visible=fy<500;ENV.update(fy,clock.elapsedTime);
+ var ao=clamp((fy-700)/1500,0,.4);atmo.visible=ao>0;atmo.material.opacity=ao;
+ if(launch){var li2=0;for(var q=0;q<4;q++)if(fy>LTH[q])li2=q+1;if(li2!==layerIdx){layerIdx=li2;fx(LAYERS[li2],2600)}
+  telEl.textContent=transit&&landed?"Aterrizaje en "+M0.at+" · 0.0 km/s":transit&&arrived&&vy<1?"Llegada a "+M0.at+" · 0.0 km/s":transit?"Distancia a "+M0.at+": "+Math.round(Math.max(0,tdist-M0.R-350)/(D0-M0.R-350)*M0.km).toLocaleString("es")+" km · "+(vy*.025).toFixed(1)+" km/s":"Altitud "+(fy*.04).toFixed(1)+" km · "+(vy*.035).toFixed(2)+" km/s · "+LAYERS[layerIdx]}
+ renderer.render(scene,cam)}
+resize();loop();
+buildMenu();
+/* ===== Puente con la página anfitriona (postMessage) =====
+   Permite que un padre (iframe) elija la misión real sin tocar el resto del
+   archivo: se queda usable de forma independiente si nadie manda mensajes. */
+window.addEventListener("message",function(ev){
+ var d=ev&&ev.data;if(!d||d.type!=="hangar:start")return;
+ var idx=(typeof d.missionIndex==="number"&&MS[d.missionIndex])?d.missionIndex:0;
+ if(d.orbitName)MS[idx].name=d.orbitName;
+ if(d.payloadDesc)MS[idx].payFn=d.payloadDesc;
+ if(d.orbitKind)orbitKind=d.orbitKind;
+ missionOutcome=d.outcome||"success";
+ var ok=missionOutcome==="success"||missionOutcome==="lost";
+ if(d.needsBurn&&ok)MS[idx].meta="9 fases · Media";
+ selectMission(idx);
+ /* Falla real, ya decidida por el motor de simulación (shared/engine.js)
+    según las decisiones del jugador en el Diseñador/Hangar: aquí solo se
+    dramatiza, truncando el control de misión en el punto correcto en vez
+    de inventar un sistema de errores aparte que cambiaría el resultado. */
+ if(missionOutcome==="cancelled"){L.length=0}
+ else if(missionOutcome==="launch_fail"){L.length=Math.min(L.length,3)}
+ else if(missionOutcome==="orbit_fail"){L.length=Math.min(L.length,7)}
+ /* Órbitas altas/lejanas (GEO, L1) necesitan un segundo encendido para
+    circularizar: se agrega como una fase más del control de misión, igual
+    que el motor real necesita ese empuje extra (mismo criterio que usa
+    shared/engine.js para orbit_fail: requires_propulsion_level). No toca
+    la física de ascenso, solo añade una pregunta más antes de "Carga útil". */
+ else if(d.needsBurn){
+  L.splice(L.length-1,0,{q:"Llegamos a la órbita de transferencia. Para quedar en "+MS[idx].name+" hace falta un quemado más. ¿Qué hacemos?",ok:"Hacer el quemado de circularización",hint:"Sin un segundo encendido del motor la nave se queda en la órbita de transferencia.",fact:"El motor se reenciende para circularizar y quedar establemente en "+MS[idx].name+".",dur:2600,go:function(){fx("Quemado de circularización",2600)}});
+  var tg=TAGS.slice();tg.push("Circularización");tg.push("Carga útil");tlEl.innerHTML=tg.map(function(t){return "<li>"+t+"</li>"}).join("");
+ }
+});
+try{window.parent.postMessage({type:"hangar:ready"},"*")}catch(e){}
+</script>
+</body>
+</html>

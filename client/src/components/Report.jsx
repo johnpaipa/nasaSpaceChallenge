@@ -71,7 +71,17 @@ export default function Report() {
     });
   }, [r.seed, game.attempt]);
 
-  if (launching) return <LaunchSequence onDone={() => setLaunching(false)} />;
+  if (launching) {
+    return (
+      <LaunchSequence
+        design={game.design}
+        missionId={game.missionId}
+        outcome={r.outcome}
+        events={r.events}
+        onDone={() => setLaunching(false)}
+      />
+    );
+  }
 
   return (
     <div className="report">
