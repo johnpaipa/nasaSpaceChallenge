@@ -1,0 +1,372 @@
+{
+  "_note": "Componentes del bus (plataforma) de la nave. Masa en kg, potencia en W, costo en millones USD. Valores de ejemplo.",
+  "categories": {
+    "structure": {
+      "label": "Estructura (bus)",
+      "role": "spacecraft",
+      "help": "El 'esqueleto' de la nave. Define cuánta masa de equipos puede cargar y cuántos instrumentos caben. Una estructura más grande da espacio, pero pesa y cuesta más.",
+      "options": [
+        {
+          "id": "micro",
+          "name": "Microsatélite",
+          "tier": "basic",
+          "mass_kg": 15,
+          "power_w": 0,
+          "cost_musd": 3,
+          "capacity_kg": 85,
+          "max_instruments": 2,
+          "dev_months": 12
+        },
+        {
+          "id": "small",
+          "name": "Satélite pequeño",
+          "tier": "basic",
+          "mass_kg": 80,
+          "power_w": 0,
+          "cost_musd": 15,
+          "capacity_kg": 420,
+          "max_instruments": 4,
+          "dev_months": 24
+        },
+        {
+          "id": "medium",
+          "name": "Satélite mediano",
+          "tier": "basic",
+          "mass_kg": 350,
+          "power_w": 0,
+          "cost_musd": 60,
+          "capacity_kg": 1800,
+          "max_instruments": 6,
+          "dev_months": 30
+        }
+      ]
+    },
+    "solar": {
+      "label": "Energía (paneles o RTG)",
+      "role": "spacecraft",
+      "help": "Los paneles solares generan energía solo con luz y rinden menos lejos del Sol. Un RTG (generador nuclear de radioisótopos, como el de Curiosity) entrega energía constante día y noche, pero es caro y escaso.",
+      "options": [
+        {
+          "id": "body",
+          "name": "Celdas en el cuerpo",
+          "tier": "basic",
+          "mass_kg": 4,
+          "power_w": 0,
+          "generation_w": 60,
+          "cost_musd": 0.8,
+          "dev_months": 0
+        },
+        {
+          "id": "deploy_s",
+          "name": "Alas desplegables pequeñas",
+          "tier": "basic",
+          "mass_kg": 12,
+          "power_w": 0,
+          "generation_w": 300,
+          "cost_musd": 3,
+          "dev_months": 2
+        },
+        {
+          "id": "deploy_l",
+          "name": "Alas desplegables grandes",
+          "tier": "basic",
+          "mass_kg": 45,
+          "power_w": 0,
+          "generation_w": 1500,
+          "cost_musd": 10,
+          "dev_months": 4
+        },
+        {
+          "id": "triple_j",
+          "name": "Alas de triple unión (alta eficiencia)",
+          "tier": "advanced",
+          "mass_kg": 60,
+          "power_w": 0,
+          "generation_w": 3200,
+          "cost_musd": 22,
+          "dev_months": 6
+        },
+        {
+          "id": "rtg",
+          "name": "RTG nuclear (MMRTG)",
+          "tier": "advanced",
+          "mass_kg": 45,
+          "power_w": 0,
+          "generation_w": 110,
+          "constant": true,
+          "cost_musd": 60,
+          "dev_months": 12
+        }
+      ]
+    },
+    "battery": {
+      "label": "Baterías",
+      "role": "spacecraft",
+      "help": "Guardan energía para los eclipses. Para que duren años solo se usa ~40% de su capacidad en cada ciclo (profundidad de descarga).",
+      "options": [
+        {
+          "id": "b100",
+          "name": "Li-ion 100 Wh",
+          "tier": "basic",
+          "mass_kg": 1,
+          "power_w": 0,
+          "capacity_wh": 100,
+          "cost_musd": 0.2,
+          "dev_months": 0
+        },
+        {
+          "id": "b500",
+          "name": "Li-ion 500 Wh",
+          "tier": "basic",
+          "mass_kg": 4,
+          "power_w": 0,
+          "capacity_wh": 500,
+          "cost_musd": 0.8,
+          "dev_months": 0
+        },
+        {
+          "id": "b2000",
+          "name": "Li-ion 2000 Wh",
+          "tier": "basic",
+          "mass_kg": 15,
+          "power_w": 0,
+          "capacity_wh": 2000,
+          "cost_musd": 2.5,
+          "dev_months": 1
+        },
+        {
+          "id": "b6000",
+          "name": "Li-ion 6000 Wh (espacial)",
+          "tier": "advanced",
+          "mass_kg": 40,
+          "power_w": 0,
+          "capacity_wh": 6000,
+          "cost_musd": 6,
+          "dev_months": 2
+        }
+      ]
+    },
+    "comms": {
+      "label": "Radio de comunicaciones",
+      "role": "comms",
+      "help": "Envía los datos a las estaciones en Tierra. Bandas de mayor frecuencia transmiten mucho más rápido, pero consumen más energía y cuestan más. La distancia debilita la señal.",
+      "options": [
+        {
+          "id": "uhf",
+          "name": "UHF (9,6 kbps)",
+          "tier": "basic",
+          "mass_kg": 0.5,
+          "power_w": 4,
+          "data_rate_mbps": 0.0096,
+          "cost_musd": 0.1,
+          "dev_months": 0
+        },
+        {
+          "id": "s_band",
+          "name": "Banda S (2 Mbps)",
+          "tier": "basic",
+          "mass_kg": 3,
+          "power_w": 15,
+          "data_rate_mbps": 2,
+          "cost_musd": 1,
+          "dev_months": 1
+        },
+        {
+          "id": "x_band",
+          "name": "Banda X (150 Mbps)",
+          "tier": "basic",
+          "mass_kg": 8,
+          "power_w": 40,
+          "data_rate_mbps": 150,
+          "cost_musd": 4,
+          "dev_months": 3
+        },
+        {
+          "id": "ka_band",
+          "name": "Banda Ka (1 Gbps)",
+          "tier": "advanced",
+          "mass_kg": 15,
+          "power_w": 80,
+          "data_rate_mbps": 1000,
+          "cost_musd": 9,
+          "dev_months": 5
+        }
+      ]
+    },
+    "computer": {
+      "label": "Computadora de a bordo",
+      "role": "comms",
+      "help": "El cerebro de la nave. Almacena los datos hasta que hay contacto con Tierra. La radiación espacial puede reiniciarla o dañarla: las versiones 'endurecidas' resisten más.",
+      "options": [
+        {
+          "id": "basic",
+          "name": "OBC comercial",
+          "tier": "basic",
+          "mass_kg": 0.5,
+          "power_w": 3,
+          "storage_gb": 32,
+          "reliability": 0.9,
+          "cost_musd": 0.3,
+          "dev_months": 0
+        },
+        {
+          "id": "industrial",
+          "name": "OBC industrial",
+          "tier": "basic",
+          "mass_kg": 3,
+          "power_w": 10,
+          "storage_gb": 512,
+          "reliability": 0.95,
+          "cost_musd": 2,
+          "dev_months": 1
+        },
+        {
+          "id": "radhard",
+          "name": "OBC endurecido a radiación",
+          "tier": "advanced",
+          "mass_kg": 6,
+          "power_w": 20,
+          "storage_gb": 2000,
+          "reliability": 0.99,
+          "cost_musd": 8,
+          "dev_months": 3
+        }
+      ]
+    },
+    "adcs": {
+      "label": "Control de orientación (ADCS)",
+      "role": "spacecraft",
+      "help": "Apunta la nave hacia donde debe mirar. Los instrumentos de alta resolución necesitan una puntería muy precisa (pocos grados o fracciones de grado).",
+      "options": [
+        {
+          "id": "magnetorquer",
+          "name": "Magnetorquers",
+          "tier": "basic",
+          "mass_kg": 1,
+          "power_w": 2,
+          "pointing_deg": 5,
+          "cost_musd": 0.2,
+          "dev_months": 0
+        },
+        {
+          "id": "wheels",
+          "name": "Ruedas de reacción",
+          "tier": "basic",
+          "mass_kg": 10,
+          "power_w": 25,
+          "pointing_deg": 0.1,
+          "cost_musd": 3,
+          "dev_months": 2
+        },
+        {
+          "id": "star_tracker",
+          "name": "Ruedas + rastreador estelar",
+          "tier": "advanced",
+          "mass_kg": 18,
+          "power_w": 40,
+          "pointing_deg": 0.01,
+          "cost_musd": 8,
+          "dev_months": 4
+        }
+      ]
+    },
+    "propulsion": {
+      "label": "Propulsión",
+      "role": "spacecraft",
+      "help": "Permite corregir la órbita, compensar el frenado atmosférico (más vida útil) y llegar a órbitas lejanas como GEO o L1.",
+      "options": [
+        {
+          "id": "none",
+          "name": "Sin propulsión",
+          "tier": "basic",
+          "mass_kg": 0,
+          "power_w": 0,
+          "level": 0,
+          "lifetime_extension_years": 0,
+          "cost_musd": 0,
+          "dev_months": 0
+        },
+        {
+          "id": "cold_gas",
+          "name": "Gas frío",
+          "tier": "basic",
+          "mass_kg": 6,
+          "power_w": 2,
+          "level": 1,
+          "lifetime_extension_years": 3,
+          "cost_musd": 1,
+          "dev_months": 1
+        },
+        {
+          "id": "hydrazine",
+          "name": "Hidracina (química)",
+          "tier": "basic",
+          "mass_kg": 80,
+          "power_w": 10,
+          "level": 2,
+          "lifetime_extension_years": 10,
+          "cost_musd": 6,
+          "dev_months": 3
+        },
+        {
+          "id": "ion",
+          "name": "Propulsión eléctrica (iónica)",
+          "tier": "advanced",
+          "mass_kg": 35,
+          "power_w": 300,
+          "level": 2,
+          "lifetime_extension_years": 15,
+          "cost_musd": 12,
+          "dev_months": 6
+        }
+      ]
+    },
+    "mobility": {
+      "label": "Movilidad (superficie)",
+      "role": "spacecraft",
+      "help": "Solo para misiones a la superficie de la Luna o Marte. Un rover puede viajar a distintos lugares interesantes; un aterrizador fijo solo estudia el lugar donde cae.",
+      "options": [
+        {
+          "id": "none",
+          "name": "Sin rover (aterrizador fijo u orbitador)",
+          "tier": "basic",
+          "mass_kg": 0,
+          "power_w": 0,
+          "speed": 0,
+          "cost_musd": 0,
+          "dev_months": 0
+        },
+        {
+          "id": "rover_s",
+          "name": "Rover pequeño (tipo Sojourner)",
+          "tier": "basic",
+          "mass_kg": 25,
+          "power_w": 20,
+          "speed": 1,
+          "cost_musd": 15,
+          "dev_months": 12
+        },
+        {
+          "id": "rover_m",
+          "name": "Rover mediano (tipo Yutu)",
+          "tier": "basic",
+          "mass_kg": 140,
+          "power_w": 60,
+          "speed": 1.5,
+          "cost_musd": 60,
+          "dev_months": 18
+        },
+        {
+          "id": "rover_l",
+          "name": "Rover grande (tipo Curiosity)",
+          "tier": "advanced",
+          "mass_kg": 400,
+          "power_w": 100,
+          "speed": 2,
+          "cost_musd": 200,
+          "dev_months": 30
+        }
+      ]
+    }
+  }
+}

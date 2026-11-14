@@ -1,0 +1,172 @@
+{
+  "_note": "Escenarios de misión. objective_tags: peso (1-3) de cada etiqueta de instrumento para el objetivo. target_science: puntos de ciencia para considerar la misión un éxito completo.",
+  "options": [
+    {
+      "id": "wildfire",
+      "name": "Vigilancia de incendios forestales",
+      "difficulty": "Fácil",
+      "description": "Detecta incendios activos y mapea zonas quemadas en América Latina para apoyar a brigadas de emergencia.",
+      "budget_musd": 150,
+      "deadline_months": 36,
+      "min_lifetime_years": 3,
+      "preferred_orbits": [
+        "sso_700",
+        "leo_400"
+      ],
+      "objective_tags": {
+        "fire": 3,
+        "land": 2,
+        "disaster": 2,
+        "earth": 1
+      },
+      "target_science": 160,
+      "hint": "El calor de un incendio se ve mejor en infrarrojo térmico. Una órbita heliosíncrona permite comparar imágenes a la misma hora cada día."
+    },
+    {
+      "id": "disaster",
+      "name": "Respuesta a desastres todo-clima",
+      "difficulty": "Media",
+      "description": "Mapea inundaciones y terremotos aunque haya nubes o sea de noche, en menos de 24 horas.",
+      "budget_musd": 300,
+      "deadline_months": 48,
+      "min_lifetime_years": 4,
+      "preferred_orbits": [
+        "sso_700",
+        "leo_400"
+      ],
+      "objective_tags": {
+        "all_weather": 3,
+        "disaster": 3,
+        "ocean": 1,
+        "earth": 1
+      },
+      "target_science": 260,
+      "hint": "Las cámaras ópticas no ven a través de nubes. Un radar sí, pero consume muchísima energía: revisa paneles y baterías."
+    },
+    {
+      "id": "climate",
+      "name": "Monitoreo del clima global",
+      "difficulty": "Media",
+      "description": "Mide temperatura, humedad, aerosoles y océanos de todo el planeta durante al menos 5 años.",
+      "budget_musd": 400,
+      "deadline_months": 48,
+      "min_lifetime_years": 5,
+      "preferred_orbits": [
+        "sso_700",
+        "geo"
+      ],
+      "objective_tags": {
+        "climate": 3,
+        "atmosphere": 2,
+        "ocean": 2,
+        "weather": 2
+      },
+      "target_science": 380,
+      "hint": "El clima necesita series largas de datos: la vida útil importa tanto como los instrumentos."
+    },
+    {
+      "id": "space_weather",
+      "name": "Alerta temprana de tormentas solares",
+      "difficulty": "Difícil",
+      "description": "Vigila el Sol y el viento solar para avisar con anticipación de tormentas que dañan satélites y redes eléctricas.",
+      "budget_musd": 350,
+      "deadline_months": 48,
+      "min_lifetime_years": 5,
+      "preferred_orbits": [
+        "l1"
+      ],
+      "objective_tags": {
+        "space_weather": 3,
+        "sun": 3,
+        "radiation": 2,
+        "magnetosphere": 2
+      },
+      "target_science": 340,
+      "hint": "Desde L1 se ve el Sol sin interrupciones, pero está lejísimos: necesitarás propulsión, un lanzador potente y una buena radio."
+    },
+    {
+      "id": "moon_water",
+      "surface": true,
+      "name": "Hielo de agua en el polo sur lunar",
+      "difficulty": "Media",
+      "description": "Aterriza un rover cerca del polo sur de la Luna y encuentra hielo de agua para futuras bases de astronautas.",
+      "budget_musd": 450,
+      "deadline_months": 48,
+      "min_lifetime_years": 1,
+      "preferred_orbits": [
+        "moon_surface"
+      ],
+      "objective_tags": {
+        "water": 3,
+        "geology": 2,
+        "moon": 1
+      },
+      "target_science": 80,
+      "site": "moon_south_pole",
+      "hint": "El hielo se esconde en cráteres en sombra eterna: sin Sol tus paneles no sirven ahí dentro. Un detector de neutrones encuentra el hidrógeno del hielo."
+    },
+    {
+      "id": "mars_life",
+      "surface": true,
+      "name": "Buscar vida antigua en Marte",
+      "difficulty": "Difícil",
+      "description": "Lleva un rover al cráter Jezero, un antiguo lago, y busca rocas que guarden señales de vida microbiana pasada.",
+      "budget_musd": 650,
+      "deadline_months": 60,
+      "min_lifetime_years": 2,
+      "preferred_orbits": [
+        "mars_surface"
+      ],
+      "objective_tags": {
+        "life": 3,
+        "geology": 3,
+        "water": 2,
+        "mars": 1
+      },
+      "target_science": 150,
+      "site": "mars_jezero",
+      "hint": "En Marte llega poca luz y las noches son largas y heladas: necesitas paneles grandes y mucha batería, o un RTG nuclear. Los datos salen por orbitadores de relevo: ¡no generes más de lo que puedes enviar!"
+    },
+    {
+      "id": "sandbox",
+      "name": "Modo libre (sandbox)",
+      "difficulty": "Libre",
+      "description": "Sin restricciones de presupuesto ni plazos. Experimenta con cualquier combinación.",
+      "budget_musd": 100000,
+      "deadline_months": 1000,
+      "min_lifetime_years": 1,
+      "preferred_orbits": [
+        "leo_400",
+        "sso_700",
+        "geo",
+        "l1",
+        "moon_surface",
+        "mars_surface"
+      ],
+      "objective_tags": {
+        "earth": 1,
+        "land": 1,
+        "climate": 1,
+        "space_weather": 1,
+        "sun": 1,
+        "disaster": 1,
+        "ocean": 1,
+        "atmosphere": 1,
+        "fire": 1,
+        "all_weather": 1,
+        "radiation": 1,
+        "magnetosphere": 1,
+        "weather": 1,
+        "agriculture": 1,
+        "forest": 1,
+        "life": 1,
+        "geology": 1,
+        "water": 1,
+        "mars": 1,
+        "moon": 1
+      },
+      "target_science": 300,
+      "hint": "Prueba diseños extremos y observa qué recurso se rompe primero."
+    }
+  ]
+}

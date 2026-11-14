@@ -1,0 +1,96 @@
+{
+  "_note": "Capacidades (kg) y costos (millones USD) aproximados de ejemplo. Reemplazar con el dataset oficial.",
+  "options": [
+    {
+      "id": "rideshare",
+      "name": "Viaje compartido (rideshare)",
+      "capacity_kg": {
+        "leo": 500,
+        "sso": 500,
+        "gto": 0,
+        "escape": 0,
+        "mars": 0
+      },
+      "cost_musd": 0,
+      "cost_per_kg_musd": 0.0065,
+      "reliability": 0.97,
+      "tier": "basic",
+      "help": "Tu nave viaja junto a muchas otras en un mismo cohete. Muy barato (se paga por kg), pero no eliges la fecha ni la órbita exacta y hay límites de masa."
+    },
+    {
+      "id": "electron",
+      "name": "Rocket Lab Electron",
+      "capacity_kg": {
+        "leo": 300,
+        "sso": 200,
+        "gto": 0,
+        "escape": 0,
+        "mars": 0
+      },
+      "cost_musd": 7.5,
+      "reliability": 0.93,
+      "tier": "basic",
+      "help": "Cohete pequeño dedicado: tú eliges cuándo y a qué órbita, pero solo lleva naves pequeñas."
+    },
+    {
+      "id": "vega_c",
+      "name": "Vega-C",
+      "capacity_kg": {
+        "leo": 3300,
+        "sso": 2300,
+        "gto": 0,
+        "escape": 0,
+        "mars": 0
+      },
+      "cost_musd": 45,
+      "reliability": 0.9,
+      "tier": "basic",
+      "help": "Lanzador europeo mediano, especializado en órbitas heliosíncronas."
+    },
+    {
+      "id": "falcon9",
+      "name": "SpaceX Falcon 9",
+      "capacity_kg": {
+        "leo": 17500,
+        "sso": 13000,
+        "gto": 5500,
+        "escape": 1500,
+        "mars": 1300
+      },
+      "cost_musd": 69,
+      "reliability": 0.99,
+      "tier": "basic",
+      "help": "Caballo de batalla reutilizable: gran capacidad, alta confiabilidad y precio competitivo."
+    },
+    {
+      "id": "atlas_v",
+      "name": "Atlas V 401",
+      "capacity_kg": {
+        "leo": 9800,
+        "sso": 7700,
+        "gto": 4750,
+        "escape": 2000,
+        "mars": 1700
+      },
+      "cost_musd": 110,
+      "reliability": 0.995,
+      "tier": "advanced",
+      "help": "Uno de los lanzadores más confiables de la historia. Costoso, pero ideal para misiones científicas de alto valor."
+    },
+    {
+      "id": "falcon_heavy",
+      "name": "SpaceX Falcon Heavy",
+      "capacity_kg": {
+        "leo": 57000,
+        "sso": 40000,
+        "gto": 8000,
+        "escape": 6000,
+        "mars": 4500
+      },
+      "cost_musd": 97,
+      "reliability": 0.98,
+      "tier": "advanced",
+      "help": "Cohete pesado: lleva naves grandes a órbitas lejanas o de escape."
+    }
+  ]
+}

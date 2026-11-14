@@ -1,0 +1,42 @@
+{
+  "_note": "Campaña: misiones encadenadas. Cada capítulo se desbloquea al ganar al menos 1 estrella en el anterior.",
+  "title": "Programa Espacial",
+  "chapters": [
+    {
+      "mission": "wildfire",
+      "icon": "🔥",
+      "title": "Primeros pasos",
+      "story": "Tu nueva agencia espacial recibe su primer encargo: vigilar los incendios forestales de América Latina. Demuestra que puedes poner un satélite en órbita sin pasarte del presupuesto."
+    },
+    {
+      "mission": "disaster",
+      "icon": "🌀",
+      "title": "Ojos que atraviesan las nubes",
+      "story": "Se acerca un huracán y las cámaras no ven a través de las nubes. Los equipos de rescate necesitan imágenes día y noche: ¿podrás diseñar un satélite que vea con radar?"
+    },
+    {
+      "mission": "climate",
+      "icon": "🌍",
+      "title": "Cuidar el planeta",
+      "story": "Los científicos del clima necesitan medir la Tierra durante años. Esta vez importa tanto lo que mides como cuánto tiempo sobrevive tu satélite."
+    },
+    {
+      "mission": "moon_water",
+      "icon": "🌕",
+      "title": "Rumbo a la Luna",
+      "story": "¡Primera misión fuera de la órbita terrestre! El programa Artemis necesita agua en el polo sur lunar para sus astronautas. Aterriza un rover, explora los cráteres en sombra y encuentra hielo."
+    },
+    {
+      "mission": "space_weather",
+      "icon": "☀️",
+      "title": "Guardianes del Sol",
+      "story": "Una tormenta solar podría apagar satélites y redes eléctricas en la Tierra. Lleva un observatorio a 1,5 millones de kilómetros para dar la alerta a tiempo."
+    },
+    {
+      "mission": "mars_life",
+      "icon": "🔴",
+      "title": "Gran final: ¿hubo vida en Marte?",
+      "story": "El desafío más difícil del programa. Aterriza en el cráter Jezero, donde hace 3 500 millones de años hubo un lago, y busca las huellas de vida más antiguas del sistema solar."
+    }
+  ]
+}

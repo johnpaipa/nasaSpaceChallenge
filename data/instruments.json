@@ -1,0 +1,333 @@
+{
+  "_note": "Instrumentos científicos. data_rate_mbps = tasa mientras opera; duty_cycle = fracción del tiempo encendido; science_value 1-10; pointing_deg = precisión de apuntado requerida. Valores de ejemplo.",
+  "options": [
+    {
+      "id": "optical_cam",
+      "name": "Cámara óptica de alta resolución",
+      "tier": "basic",
+      "mass_kg": 30,
+      "power_w": 40,
+      "cost_musd": 12,
+      "data_rate_mbps": 100,
+      "duty_cycle": 0.05,
+      "science_value": 6,
+      "pointing_deg": 0.1,
+      "dev_months": 6,
+      "color": "#4fc3f7",
+      "tags": [
+        "earth",
+        "land",
+        "disaster"
+      ],
+      "help": "Fotos detalladas de la superficie, como una cámara muy potente. No ve a través de nubes ni de noche."
+    },
+    {
+      "id": "multispectral",
+      "name": "Generador de imágenes multiespectral",
+      "tier": "basic",
+      "mass_kg": 45,
+      "power_w": 60,
+      "cost_musd": 18,
+      "data_rate_mbps": 60,
+      "duty_cycle": 0.1,
+      "science_value": 8,
+      "pointing_deg": 0.5,
+      "dev_months": 8,
+      "color": "#81c784",
+      "tags": [
+        "earth",
+        "land",
+        "agriculture",
+        "climate",
+        "fire"
+      ],
+      "help": "Ve en varios 'colores' invisibles al ojo (infrarrojo cercano): revela la salud de la vegetación, zonas quemadas y uso del suelo."
+    },
+    {
+      "id": "hyperspectral",
+      "name": "Espectrómetro hiperespectral",
+      "tier": "advanced",
+      "mass_kg": 70,
+      "power_w": 110,
+      "cost_musd": 35,
+      "data_rate_mbps": 300,
+      "duty_cycle": 0.05,
+      "science_value": 10,
+      "pointing_deg": 0.1,
+      "dev_months": 14,
+      "color": "#ba68c8",
+      "tags": [
+        "earth",
+        "land",
+        "climate",
+        "agriculture",
+        "atmosphere"
+      ],
+      "help": "Cientos de bandas de color: identifica minerales, gases y tipos de vegetación. Genera enormes cantidades de datos."
+    },
+    {
+      "id": "sar",
+      "name": "Radar de apertura sintética (SAR)",
+      "tier": "advanced",
+      "mass_kg": 250,
+      "power_w": 1200,
+      "cost_musd": 60,
+      "data_rate_mbps": 300,
+      "duty_cycle": 0.05,
+      "science_value": 9,
+      "pointing_deg": 1,
+      "dev_months": 18,
+      "color": "#ffb74d",
+      "tags": [
+        "earth",
+        "disaster",
+        "ocean",
+        "all_weather",
+        "land"
+      ],
+      "help": "Emite sus propias ondas de radio: ve a través de nubes, humo y de noche. Ideal para inundaciones y desastres, pero consume muchísima energía."
+    },
+    {
+      "id": "thermal_ir",
+      "name": "Cámara infrarroja térmica",
+      "tier": "basic",
+      "mass_kg": 25,
+      "power_w": 35,
+      "cost_musd": 10,
+      "data_rate_mbps": 20,
+      "duty_cycle": 0.2,
+      "science_value": 6,
+      "pointing_deg": 0.5,
+      "dev_months": 6,
+      "color": "#e57373",
+      "tags": [
+        "earth",
+        "climate",
+        "fire",
+        "disaster"
+      ],
+      "help": "Mide el calor: detecta incendios activos, volcanes y la temperatura del océano y las ciudades."
+    },
+    {
+      "id": "mw_radiometer",
+      "name": "Radiómetro de microondas",
+      "tier": "basic",
+      "mass_kg": 60,
+      "power_w": 80,
+      "cost_musd": 15,
+      "data_rate_mbps": 1,
+      "duty_cycle": 1,
+      "science_value": 7,
+      "pointing_deg": 1,
+      "dev_months": 8,
+      "color": "#4db6ac",
+      "tags": [
+        "climate",
+        "ocean",
+        "weather",
+        "all_weather"
+      ],
+      "help": "Mide humedad del suelo, lluvia y temperatura atmosférica, incluso con nubes. Clave para el clima y el pronóstico del tiempo."
+    },
+    {
+      "id": "lidar",
+      "name": "LIDAR atmosférico",
+      "tier": "advanced",
+      "mass_kg": 90,
+      "power_w": 150,
+      "cost_musd": 30,
+      "data_rate_mbps": 10,
+      "duty_cycle": 0.5,
+      "science_value": 8,
+      "pointing_deg": 0.1,
+      "dev_months": 12,
+      "color": "#f06292",
+      "tags": [
+        "climate",
+        "atmosphere",
+        "forest"
+      ],
+      "help": "Dispara pulsos láser para medir la altura de bosques, nubes y aerosoles en 3D."
+    },
+    {
+      "id": "magnetometer",
+      "name": "Magnetómetro",
+      "tier": "basic",
+      "mass_kg": 3,
+      "power_w": 3,
+      "cost_musd": 1.5,
+      "data_rate_mbps": 0.05,
+      "duty_cycle": 1,
+      "science_value": 4,
+      "pointing_deg": 10,
+      "dev_months": 3,
+      "color": "#90a4ae",
+      "tags": [
+        "space_weather",
+        "magnetosphere"
+      ],
+      "help": "Mide el campo magnético que trae el viento solar. Ligero, barato y casi no consume."
+    },
+    {
+      "id": "particle_detector",
+      "name": "Detector de partículas energéticas",
+      "tier": "basic",
+      "mass_kg": 8,
+      "power_w": 10,
+      "cost_musd": 4,
+      "data_rate_mbps": 0.5,
+      "duty_cycle": 1,
+      "science_value": 6,
+      "pointing_deg": 10,
+      "dev_months": 4,
+      "color": "#fff176",
+      "tags": [
+        "space_weather",
+        "radiation"
+      ],
+      "help": "Cuenta protones y electrones del viento solar: avisa de tormentas de radiación peligrosas para astronautas y satélites."
+    },
+    {
+      "id": "coronagraph",
+      "name": "Coronógrafo solar",
+      "tier": "advanced",
+      "mass_kg": 40,
+      "power_w": 40,
+      "cost_musd": 20,
+      "data_rate_mbps": 10,
+      "duty_cycle": 0.5,
+      "science_value": 9,
+      "pointing_deg": 0.01,
+      "dev_months": 12,
+      "color": "#ffd54f",
+      "tags": [
+        "space_weather",
+        "sun"
+      ],
+      "help": "Tapa el disco del Sol para ver su corona y detectar eyecciones de masa coronal que viajan hacia la Tierra."
+    },
+    {
+      "id": "uv_spectrometer",
+      "name": "Espectrómetro ultravioleta",
+      "tier": "basic",
+      "mass_kg": 20,
+      "power_w": 25,
+      "cost_musd": 12,
+      "data_rate_mbps": 5,
+      "duty_cycle": 0.5,
+      "science_value": 7,
+      "pointing_deg": 0.1,
+      "dev_months": 8,
+      "color": "#9575cd",
+      "tags": [
+        "sun",
+        "atmosphere",
+        "space_weather"
+      ],
+      "help": "Analiza la luz ultravioleta del Sol y de la alta atmósfera: actividad solar, ozono y gases."
+    },
+    {
+      "id": "mastcam",
+      "surface": true,
+      "name": "Cámaras panorámicas (tipo Mastcam)",
+      "tier": "basic",
+      "mass_kg": 8,
+      "power_w": 15,
+      "cost_musd": 8,
+      "data_rate_mbps": 0.5,
+      "duty_cycle": 0.1,
+      "science_value": 5,
+      "pointing_deg": 10,
+      "dev_months": 6,
+      "color": "#4fc3f7",
+      "tags": [
+        "geology",
+        "mars",
+        "moon"
+      ],
+      "help": "Ojos del rover: fotografía el paisaje en color y 3D para elegir dónde ir y qué estudiar."
+    },
+    {
+      "id": "drill",
+      "surface": true,
+      "name": "Taladro y recolector de muestras",
+      "tier": "basic",
+      "mass_kg": 35,
+      "power_w": 150,
+      "cost_musd": 25,
+      "data_rate_mbps": 0.1,
+      "duty_cycle": 0.05,
+      "science_value": 9,
+      "pointing_deg": 10,
+      "dev_months": 14,
+      "color": "#ffb74d",
+      "tags": [
+        "geology",
+        "life",
+        "water"
+      ],
+      "help": "Perfora rocas y guarda muestras. Consume mucha energía mientras taladra."
+    },
+    {
+      "id": "rock_spectrometer",
+      "surface": true,
+      "name": "Espectrómetro de rocas (tipo SuperCam)",
+      "tier": "basic",
+      "mass_kg": 12,
+      "power_w": 30,
+      "cost_musd": 20,
+      "data_rate_mbps": 0.2,
+      "duty_cycle": 0.1,
+      "science_value": 8,
+      "pointing_deg": 10,
+      "dev_months": 10,
+      "color": "#ba68c8",
+      "tags": [
+        "life",
+        "geology",
+        "mars"
+      ],
+      "help": "Dispara un láser a las rocas y analiza la luz para saber de qué están hechas y si guardan pistas de vida antigua."
+    },
+    {
+      "id": "ground_radar",
+      "surface": true,
+      "name": "Radar de subsuelo (tipo RIMFAX)",
+      "tier": "basic",
+      "mass_kg": 3,
+      "power_w": 10,
+      "cost_musd": 6,
+      "data_rate_mbps": 0.5,
+      "duty_cycle": 0.2,
+      "science_value": 6,
+      "pointing_deg": 10,
+      "dev_months": 6,
+      "color": "#81c784",
+      "tags": [
+        "water",
+        "geology"
+      ],
+      "help": "Ve las capas bajo el suelo hasta 10 m de profundidad: hielo enterrado, antiguos ríos y sedimentos."
+    },
+    {
+      "id": "neutron_spectrometer",
+      "surface": true,
+      "name": "Espectrómetro de neutrones (detector de hielo)",
+      "tier": "basic",
+      "mass_kg": 5,
+      "power_w": 8,
+      "cost_musd": 8,
+      "data_rate_mbps": 0.05,
+      "duty_cycle": 1,
+      "science_value": 7,
+      "pointing_deg": 10,
+      "dev_months": 6,
+      "color": "#e0f7fa",
+      "tags": [
+        "water",
+        "moon"
+      ],
+      "help": "Detecta hidrógeno bajo la superficie: la pista principal para encontrar hielo de agua."
+    }
+  ]
+}
