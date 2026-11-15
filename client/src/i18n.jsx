@@ -27,13 +27,13 @@ export function LangProvider({ children }) {
 
 export const useLang = () => useContext(LangContext);
 
-/** Selector de idioma con banderas. */
-export function LangPicker({ compact = false }) {
+/** Selector de idioma. `plain` omite el emoji (el inicio dibuja su propio icono). */
+export function LangPicker({ compact = false, plain = false }) {
   const { lang, change } = useLang();
   return (
     <select className={`lang-picker ${compact ? 'compact' : ''}`} value={lang} onChange={(e) => change(e.target.value)} aria-label="Idioma / Language">
       {Object.entries(LANGS).map(([id, l]) => (
-        <option key={id} value={id}>{compact ? `🌐 ${id.toUpperCase()}` : `🌐 ${l.name}`}</option>
+        <option key={id} value={id}>{plain ? l.name : compact ? `🌐 ${id.toUpperCase()}` : `🌐 ${l.name}`}</option>
       ))}
     </select>
   );

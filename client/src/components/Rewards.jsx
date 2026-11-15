@@ -3,6 +3,7 @@ import { useGame } from '../game.jsx';
 import { BADGES, CHAPTERS, rankFor, careerScore } from '../campaign.js';
 import { sfx } from '../sound.js';
 import { t, num } from '../../../shared/i18n.js';
+import Modal from './Modal.jsx';
 
 /** Recompensas obtenidas: puntos, medallas nuevas, capítulo desbloqueado y ascenso de rango. */
 export default function Rewards({ out, compact = false }) {
@@ -55,23 +56,21 @@ export default function Rewards({ out, compact = false }) {
 export function BadgeGallery({ onClose }) {
   const { progress } = useGame();
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal wide" onClick={(e) => e.stopPropagation()}>
-        <h2>🏅 {t('Medallas')} · {Object.keys(progress.badges).length}/{BADGES.length}</h2>
-        <div className="badge-grid">
-          {BADGES.map((b) => {
-            const got = progress.badges[b.id];
-            return (
-              <div key={b.id} className={`badge-card ${got ? 'got' : ''}`}>
-                <span className="reward-icon">{got ? b.icon : '🔒'}</span>
-                <b>{b.name}</b>
-                <small>{b.desc}</small>
-              </div>
-            );
-          })}
-        </div>
-        <button className="primary" onClick={onClose}>{t('Cerrar')}</button>
+    <Modal onClose={onClose} wide>
+      <h2>🏅 {t('Medallas')} · {Object.keys(progress.badges).length}/{BADGES.length}</h2>
+      <div className="badge-grid">
+        {BADGES.map((b) => {
+          const got = progress.badges[b.id];
+          return (
+            <div key={b.id} className={`badge-card ${got ? 'got' : ''}`}>
+              <span className="reward-icon">{got ? b.icon : '🔒'}</span>
+              <b>{b.name}</b>
+              <small>{b.desc}</small>
+            </div>
+          );
+        })}
       </div>
-    </div>
+      <button className="primary" onClick={onClose}>{t('Cerrar')}</button>
+    </Modal>
   );
 }

@@ -34,7 +34,14 @@ function nextTip(design, r, stars) {
 }
 
 export default function Report() {
-  const { game, dispatch, mode, startExplore, record } = useGame();
+  const { game, dispatch, mode, startExplore, record, setJump } = useGame();
+  // Dónde se arregla cada lección: al tocarla se vuelve al diseño con esa sección abierta.
+  const fixField = {
+    [t('Masa')]: 'structure', [t('Lanzamiento')]: 'launcher', [t('Movilidad')]: 'mobility', [t('Ciencia')]: 'instruments', [t('Energía')]: 'solar',
+    [t('Datos')]: 'comms', [t('Orientación')]: 'adcs', [t('Órbita')]: 'orbit', [t('Tiempo')]: 'lifetimeYears',
+  };
+  const fix = (field) => { sfx.click(); setJump(field); dispatch({ type: 'redesign' }); };
+  const signed = (n, digits = 0) => `${n > 0 ? '+' : n < 0 ? '−' : '±'}${num(Math.abs(n), digits)}`;
   // Mismo resultado (misma semilla), pero con los textos en el idioma de este jugador.
   const r = useMemo(() => simulate(game.design, game.missionId, game.result.seed), [game.result]);
   const surface = r.analysis.parts.orbit.surface;
@@ -75,7 +82,6 @@ export default function Report() {
     return (
       <LaunchSequence
         design={game.design}
-        missionId={game.missionId}
         outcome={r.outcome}
         events={r.events}
         onDone={() => setLaunching(false)}
@@ -163,14 +169,35 @@ export default function Report() {
           <h3>{t('¿Qué aprendimos?')}</h3>
           {r.lessons.length === 0
             ? <p>{t('El diseño estaba equilibrado: todos los subsistemas tenían margen. Prueba un escenario más difícil o reduce costos para mejorar la eficiencia.')}</p>
-            : <ul className="lessons">{r.lessons.map((l, i) => <li key={i}><b>{l.area}:</b> {l.text}</li>)}</ul>}
+            : (
+              <ul className="lessons">
+                {r.lessons.map((l, i) => (
+                  <li key={i}>
+                    <b>{l.area}:</b> {l.text}
+                    {fixField[l.area] && <> <button className="link" onClick={() => fix(fixField[l.area])}>🔧 {t('Arreglar esto')}</button></>}
+                  </li>
+                ))}
+              </ul>
+            )}
           <h3>{t('Intentos anteriores')}</h3>
           <table className="history">
-            <thead><tr><th>{t('Misión')}</th><th>{t('Nota')}</th><th>{t('Puntaje')}</th><th>{t('Costo')}</th></tr></thead>
+            <thead><tr><th>{t('Nota')}</th><th>{t('Puntaje')}</th><th>{t('Costo')}</th><th /></tr></thead>
             <tbody>
-              {history.filter((h) => h.mission === game.missionId).slice(0, 8).map((h) => (
-                <tr key={h.key}><td>{index.missions[h.mission]?.name}</td><td>{h.grade}</td><td>{h.score}</td><td>{h.cost.toFixed(0)} M$</td></tr>
-              ))}
+              {history.filter((h) => h.mission === game.missionId).slice(0, 8).map((h) => {
+                const current = h.key === `${r.seed}-${game.attempt}`;
+                return (
+                  <tr key={h.key} className={current ? 'current' : ''}>
+                    <td>{h.grade}</td>
+                    {/* Diferencia de cada intento anterior frente al de ahora */}
+                    <td>{h.score}{!current && <small className="muted"> ({signed(h.score - r.score.total)})</small>}</td>
+                    <td>{h.cost.toFixed(0)} M${!current && <small className="muted"> ({signed(h.cost - r.analysis.cost.total)})</small>}</td>
+                    <td>
+                      {current ? <small className="muted">{t('este intento')}</small>
+                        : mode !== 'multi' && h.design && <button className="link" onClick={() => { sfx.click(); dispatch({ type: 'loadDesign', design: h.design }); }}>↩ {t('Restaurar')}</button>}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </section>

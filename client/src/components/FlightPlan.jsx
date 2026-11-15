@@ -12,7 +12,7 @@ export default function FlightPlan({ plan, onGo }) {
       <ol>
         {plan.map((s) => (
           <li key={s.id} className={`${s.done ? 'done' : ''} ${s === next ? 'current' : ''}`}>
-            <button onClick={() => { sfx.click(); onGo(s.tab); }} title={s.text}>
+            <button onClick={() => { sfx.click(); onGo(s); }} title={s.text}>
               <span>{s.done ? '✅' : s === next ? '👉' : '⬜'}</span> {s.title}
             </button>
           </li>

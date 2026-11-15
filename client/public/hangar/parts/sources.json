@@ -1,0 +1,58 @@
+{
+  "motor": {
+    "title": "Motor RS-25",
+    "body": "Los cuatro motores RS-25 de la etapa central del SLS queman hidrógeno y oxígeno líquidos. La tobera dirige los gases de escape para producir empuje.",
+    "source": "https://www.nasa.gov/reference/space-launch-system-rs-25-core-stage-engine/",
+    "image": "parts/motor.jpg",
+    "credit": "Diagrama del motor RS-25 · NASA",
+    "originalImage": "https://www.nasa.gov/wp-content/uploads/2021/10/rs-25_engine_call-outs.jpg"
+  },
+  "s1": {
+    "title": "Etapa central del SLS",
+    "body": "La etapa central contiene los depósitos de hidrógeno y oxígeno líquidos. También soporta las etapas superiores y transmite el empuje de motores y propulsores.",
+    "source": "https://www.nasa.gov/reference/sls-space-launch-system-core-stage/",
+    "image": "parts/s1.png",
+    "credit": "Ilustración de la etapa central · NASA",
+    "originalImage": "https://www.nasa.gov/wp-content/uploads/2024/07/0080-sls-core-stage-cutout-07122024-copy.png"
+  },
+  "srb": {
+    "title": "Propulsores sólidos del SLS",
+    "body": "Dos propulsores de cinco segmentos proporcionan la mayor parte del empuje al despegar. Se separan de la etapa central después de consumir su propelente.",
+    "source": "https://www.nasa.gov/reference/space-launch-system-solid-rocket-booster/",
+    "image": "parts/srb.jpg",
+    "credit": "Imagen de propulsión sólida publicada por NASA",
+    "originalImage": "https://www.nasa.gov/wp-content/uploads/2020/02/bole.jpg"
+  },
+  "s2": {
+    "title": "Etapa superior ICPS",
+    "body": "Esta etapa usa un motor RL10 alimentado por hidrógeno y oxígeno líquidos. En Artemis I dio a Orión el impulso para viajar hacia la Luna.",
+    "source": "https://www.nasa.gov/reference/icps/",
+    "image": "parts/s2.jpg",
+    "credit": "Etapa superior ICPS · NASA/Brandon Hancock",
+    "originalImage": "https://www.nasa.gov/wp-content/uploads/2024/11/nasa-sls-upper-stage-prepped-for-shipment-to-space-coast-dsc00216-cropped.jpg"
+  },
+  "inter": {
+    "title": "Conexión entre etapas",
+    "body": "El adaptador del SLS Bloque 1 conecta la etapa central con la etapa superior ICPS. El esquema muestra dónde encaja esta conexión en el lanzador real.",
+    "source": "https://www.nasa.gov/reference/icps/",
+    "image": "parts/inter.jpg",
+    "credit": "Esquema del SLS Bloque 1 · NASA",
+    "originalImage": "https://www.nasa.gov/wp-content/uploads/2024/11/sls-4704-sls-rev-32-publicrelease-dac3-16-9-111623-r6.jpg"
+  },
+  "pay": {
+    "title": "Carga científica: telescopio Webb",
+    "body": "La carga útil realiza la misión. Este ejemplo real muestra el telescopio Webb montado sobre Ariane 5 antes de colocar la cofia. No es el satélite simplificado del juego.",
+    "source": "https://science.nasa.gov/blogs/webb/2021/12/14/webb-placed-on-top-of-ariane-5/",
+    "image": "parts/pay.jpg",
+    "credit": "Webb sobre Ariane 5 · ESA/CNES/Arianespace",
+    "originalImage": "https://science.nasa.gov/wp-content/uploads/2021/12/52682-1024x683-1.jpg"
+  },
+  "fair": {
+    "title": "Cofia de Ariane 5",
+    "body": "La cofia rodea la carga durante el lanzamiento. Esta fotografía muestra cómo se bajó alrededor del telescopio Webb durante su encapsulado.",
+    "source": "https://svs.gsfc.nasa.gov/14079/",
+    "image": "parts/fair.jpg",
+    "credit": "Encapsulado de Webb · NASA Goddard / Michael McClare",
+    "originalImage": "https://svs.gsfc.nasa.gov/vis/a010000/a014000/a014079/Encapsulation_-_Mid_Level.00360_print.jpg"
+  }
+}

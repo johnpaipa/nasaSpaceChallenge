@@ -8,17 +8,17 @@
 // decidió shared/engine.js a partir de las decisiones reales del jugador en
 // el Diseñador; este módulo solo lo dramatiza (trunca el control de misión
 // en el punto correcto y muestra una anomalía) en vez de inventar un sistema
-// de errores propio que podría divergir del resultado real. landing_fail
-// sigue usando LaunchCinematic: requiere tocar la física de aterrizaje del
-// Hangar (landStep), que no está pensada para fallar.
+// de errores propio que podría divergir del resultado real.
 import { useEffect, useRef, useState } from 'react';
 import { index } from '../../../shared/catalog.js';
 import { t } from '../../../shared/i18n.js';
+import { useLang } from '../i18n.jsx';
 
 const MISSION_INDEX = { moon: 1, mars: 2 };
 const ORBIT_KIND = { leo_400: 'leo', sso_700: 'sso', geo: 'geo', l1: 'l1' };
 
 export default function HangarLaunch({ design, orbit, outcome, onDone }) {
+  const { lang } = useLang();
   const frameRef = useRef(null);
   const started = useRef(false);
   const [ready, setReady] = useState(false);
@@ -54,6 +54,7 @@ export default function HangarLaunch({ design, orbit, outcome, onDone }) {
       payloadDesc,
       needsBurn,
       outcome,
+      lang,
     }, '*');
     frameRef.current?.contentWindow?.focus();
   }, [ready, orbit, design, outcome]);
