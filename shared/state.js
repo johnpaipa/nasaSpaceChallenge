@@ -65,6 +65,19 @@ export function createState(missionId = 'wildfire') {
   return { missionId, design: designFor(missionId), phase: 'design', result: null, ready: {}, log: [], attempt: 0 };
 }
 
+/** Copia de un diseño guardado, conservando solo valores que existen en el catálogo actual. */
+export function sanitizeDesign(saved, fallback = defaultDesign()) {
+  const design = { ...fallback };
+  if (!saved || typeof saved !== 'object') return design;
+  for (const key of Object.keys(design)) {
+    const v = saved[key];
+    if (key === 'instruments') { if (Array.isArray(v)) design.instruments = v.filter((id) => index.instruments[id]); }
+    else if (key === 'lifetimeYears') { if (Number.isFinite(v)) design.lifetimeYears = Math.min(15, Math.max(1, Math.round(v))); }
+    else if ((key === 'orbit' ? index.orbits : key === 'launcher' ? index.launchers : index.components[key])?.[v]) design[key] = v;
+  }
+  return design;
+}
+
 /**
  * Un jugador puede editar un campo si tiene el rol dueño de ese campo,
  * si juega solo (rol 'all') o si nadie en la sala tomó ese rol.
@@ -112,6 +125,10 @@ export function reducer(state, action, ctx = { roles: ['all'], claimed: [], play
     }
     case 'redesign':
       return { ...state, phase: 'design', result: null, ready: {} };
+    case 'loadDesign':
+      // Restaura un intento anterior del historial (solo en un jugador).
+      if (!ctx.roles.includes('all')) return state;
+      return { ...state, phase: 'design', result: null, ready: {}, design: sanitizeDesign(action.design, state.design), log: log('restauró un diseño anterior') };
     case 'chat':
       return { ...state, log: [...state.log.slice(-49), { t: Date.now(), who: ctx.player, text: String(action.text).slice(0, 300), chat: true }] };
     default:

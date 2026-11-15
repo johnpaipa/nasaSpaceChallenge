@@ -15,6 +15,7 @@ export function GameProvider({ children }) {
   const [room, setRoom] = useState(null);
   const [error, setError] = useState(null);
   const [explore, setExplore] = useState(null); // { design, missionId, counts } durante la exploración
+  const [jump, setJump] = useState(null); // campo del diseño que el Diseñador debe abrir al volver del reporte
   const [progress, setProgress] = useState(loadProgress);
   const progressRef = useRef(progress);
   // Registra un resultado en la campaña (solo suma si mejora la mejor marca).
@@ -54,7 +55,9 @@ export function GameProvider({ children }) {
       record,
       resetCampaign: () => { const p = resetProgress(); progressRef.current = p; setProgress(p); },
       endExplore: () => setExplore(null),
-      startSolo: (missionId) => { setSolo(createState(missionId)); setMode('solo'); },
+      jump,
+      setJump,
+      startSolo: (missionId, design) => { const next = createState(missionId); if (design) next.design = { ...next.design, ...design }; setSolo(next); setMode('solo'); },
       createRoom: (name, missionId) => { setMode('multi'); socket().emit('room:create', { name, missionId }); },
       joinRoom: (name, code) => { setMode('multi'); socket().emit('room:join', { name, code }); },
       leave: () => { socketRef.current?.emit('room:leave'); setRoom(null); setMode(null); },
@@ -69,7 +72,7 @@ export function GameProvider({ children }) {
         setSolo((s) => reducer(s, action));
       },
     };
-  }, [mode, solo, room, error, explore, progress]);
+  }, [mode, solo, room, error, explore, progress, jump]);
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
 }

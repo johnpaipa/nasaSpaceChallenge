@@ -2,7 +2,8 @@
 // ("Plan de vuelo") que cualquiera, incluso un niño, pueda seguir.
 import { t, translatable } from '../../shared/i18n.js';
 
-/** Devuelve la lista ordenada de pasos con su estado y una explicación simple. */
+/** Devuelve la lista ordenada de pasos con su estado y una explicación simple.
+ * `tab` y `field` dicen dónde se arregla cada paso en el Diseñador. */
 export function flightPlan(design, a) {
   const relevant = a.science.instruments.filter((s) => s.relevance >= 0.66).length;
   const massOk = a.mass.internal <= a.mass.structureCapacity && design.instruments.length <= a.parts.structure.max_instruments;
@@ -11,57 +12,57 @@ export function flightPlan(design, a) {
 
   const steps = [
     {
-      id: 'instruments', tab: 'science', done: relevant > 0,
+      id: 'instruments', tab: 'science', field: 'instruments', done: relevant > 0,
       title: 'Elige instrumentos para tu misión',
       text: 'Ve a 🔬 Ciencia y escoge instrumentos con estrellas ★★★: son los que ayudan a tu objetivo. Los que dicen "no aporta" solo gastan dinero y energía.',
     },
     {
-      id: 'orbit', tab: 'planner', done: a.science.orbitFit === 1,
+      id: 'orbit', tab: 'planner', field: 'orbit', done: a.science.orbitFit === 1,
       title: 'Escoge una buena órbita',
       text: t('La órbita es el "camino" que recorre tu satélite alrededor de la Tierra. Para esta misión te recomiendo: {orbits}.', { orbits: a.mission.preferred_orbits.map(orbitName).join(t(' o ')) }),
     },
     {
-      id: 'propulsion', tab: 'spacecraft', done: propOk, hidden: a.parts.orbit.requires_propulsion_level === 0,
+      id: 'propulsion', tab: 'spacecraft', field: 'propulsion', done: propOk, hidden: a.parts.orbit.requires_propulsion_level === 0,
       title: 'Ponle motor si vas lejos',
       text: 'Para llegar a órbitas muy lejanas (geoestacionaria o L1) el cohete no basta: tu satélite necesita su propio motor. En 🛰️ Nave elige Hidracina.',
     },
     {
-      id: 'rover', tab: 'spacecraft', done: a.parts.mobility.id !== 'none', hidden: !a.parts.orbit.surface,
+      id: 'rover', tab: 'spacecraft', field: 'mobility', done: a.parts.mobility.id !== 'none', hidden: !a.parts.orbit.surface,
       title: 'Lleva un rover para explorar',
       text: 'Vas a aterrizar en otro mundo. En 🛰️ Nave, sección Movilidad, elige un rover: así podrás manejarlo y visitar los lugares más interesantes.',
     },
     {
-      id: 'power', tab: 'spacecraft', done: a.power.generation >= a.power.consumption,
+      id: 'power', tab: 'spacecraft', field: 'solar', done: a.power.generation >= a.power.consumption,
       title: 'Dale energía suficiente',
       text: t('Tus equipos gastan {use} W y tus paneles solares dan {gen} W. En 🛰️ Nave elige paneles más grandes o quita instrumentos que gasten mucho.', { use: Math.round(a.power.consumption), gen: Math.round(a.power.generation) }) + (a.parts.orbit.body === 'mars' ? ' ' + t('En Marte llega poca luz: ¡un RTG nuclear funciona hasta de noche!') : ''),
     },
     {
-      id: 'battery', tab: 'spacecraft', done: a.power.batteryUsable >= a.power.eclipseEnergy,
+      id: 'battery', tab: 'spacecraft', field: 'battery', done: a.power.batteryUsable >= a.power.eclipseEnergy,
       title: 'Batería para la noche',
       text: 'Cuando el satélite pasa por la sombra de la Tierra no le llega luz del Sol. ¡Necesita una batería más grande para no apagarse! Cámbiala en 🛰️ Nave.',
     },
     {
-      id: 'data', tab: 'comms', done: a.data.delivered >= 0.9,
+      id: 'data', tab: 'comms', field: 'comms', done: a.data.delivered >= 0.9,
       title: 'Envía tus datos a la Tierra',
       text: 'Tus instrumentos toman más fotos y datos de los que tu radio puede enviar. En 📡 Comunicaciones elige una radio más rápida (Banda X o Ka).',
     },
     {
-      id: 'mass', tab: 'spacecraft', done: massOk,
+      id: 'mass', tab: 'spacecraft', field: 'structure', done: massOk,
       title: 'Que todo quepa en la nave',
       text: 'Llevas demasiadas cosas para el tamaño de tu satélite. En 🛰️ Nave escoge una estructura más grande o quita instrumentos.',
     },
     {
-      id: 'launcher', tab: 'planner', done: launchOk,
+      id: 'launcher', tab: 'planner', field: 'launcher', done: launchOk,
       title: 'Elige un cohete que pueda llevarte',
       text: 'Tu satélite pesa demasiado para ese cohete, o el cohete no llega tan lejos. En 🧭 Misión elige uno que diga "kg a esta órbita" con un número mayor al peso de tu nave.',
     },
     {
-      id: 'lifetime', tab: 'planner', done: a.time.lifetime >= a.time.minLifetime,
+      id: 'lifetime', tab: 'planner', field: 'lifetimeYears', done: a.time.lifetime >= a.time.minLifetime,
       title: t('Que dure al menos {n} años', { n: a.time.minLifetime }),
       text: 'Tu misión necesita funcionar varios años. En 🧭 Misión mueve la barra de vida útil. Si la órbita es muy baja, el satélite cae pronto: ponle un motor pequeño (gas frío).',
     },
     {
-      id: 'budget', tab: 'planner', done: a.cost.total <= a.cost.budget,
+      id: 'budget', tab: 'planner', field: 'launcher', done: a.cost.total <= a.cost.budget,
       title: 'No te pases del dinero',
       text: t('Tu misión cuesta {cost} millones y tienes {budget}. Prueba un cohete más barato (el viaje compartido es el más económico) o quita instrumentos caros.', { cost: Math.round(a.cost.total), budget: a.cost.budget }),
     },

@@ -12,7 +12,7 @@ await page.setViewport({ width: 1400, height: 850 });
 const errors = [];
 page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errors.push(`[${m.type()}] ${m.text()}`); });
 page.on('pageerror', (e) => errors.push(`[pageerror] ${e.message}\n${e.stack?.split('\n').slice(0, 4).join('\n')}`));
-await page.goto('http://localhost:3001', { waitUntil: 'networkidle0' });
+await page.goto('http://localhost:3001/?debug', { waitUntil: 'networkidle0' });
 await page.evaluate(() => localStorage.setItem('smd-lang', 'es'));
 await page.reload({ waitUntil: 'networkidle0' });
 const label = which === 'moon' ? 'Probar en la Luna' : 'Probar en Marte';

@@ -70,7 +70,7 @@ const TEXT_FIELDS = new Set(['name', 'help', 'description', 'hint', 'story', 'ti
 })(originalData);
 
 // Nombres propios que no se traducen
-for (const k of ['NASA Space Apps Challenge', 'Mission Designer', 'Orbi', 'HiRISE', 'LOLA', 'SpaceX Falcon 9', 'SpaceX Falcon Heavy', 'Atlas V 401', 'Vega-C', 'Rocket Lab Electron', 'T-0']) keys.delete(k);
+for (const k of ['NASA Space Apps Challenge', 'Mission Designer', 'Orbi', 'HiRISE', 'LOLA', 'SpaceX Falcon 9', 'SpaceX Falcon Heavy', 'Atlas V 401', 'Vega-C', 'Rocket Lab Electron', 'T-0', 'Escape']) keys.delete(k);
 for (const k of [...keys]) {
   if (!/[A-Za-zÁÉÍÓÚáéíóúñÑ]/.test(k)) keys.delete(k);
   else if (/^[a-z]+[A-Z]\w*$/.test(k) || /^var\(|^M\d|^circuit-|^Hola$/.test(k)) keys.delete(k); // ids, CSS, SVG

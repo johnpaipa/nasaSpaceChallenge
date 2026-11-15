@@ -11,15 +11,17 @@ import { createTerrain, minimapImage } from './terrain.js';
 import { createSim, step, startAnalysis, summarize, triggerFaultNow, NEAR_DISTANCE, DIFFICULTIES } from './sim.js';
 import Rover, { DustTrail } from './Rover.jsx';
 import Cabin from './Cabin.jsx';
+import Hud, { POI_COLOR } from './Hud.jsx';
 import { panelAction } from './faults.js';
-import { startDeploy, deployAction, canDeploy, siteQuality } from './antenna.js';
+import { startDeploy, deployAction, canDeploy } from './antenna.js';
 import { ArmPanel, DeployArm, DeployedAntenna } from './ArmControl.jsx';
 import { sfx, speak } from '../sound.js';
 import { useGame } from '../game.jsx';
 import { t, num } from '../../../shared/i18n.js';
 import Rewards from '../components/Rewards.jsx';
 
-const POI_COLOR = { pending: '#ffd54f', locked: '#78909c', collected: '#4fc3f7', sent: '#69f0ae' };
+// Con ?debug en la URL se puede disparar una falla a mano (tecla F) para probar o mostrar la cabina.
+const DEBUG = typeof location !== 'undefined' && new URLSearchParams(location.search).has('debug');
 const POI_LABEL = { pending: 'por analizar', locked: 'falta instrumento', collected: 'datos por enviar', sent: '¡enviado!' };
 
 function Poi({ poi, state, y, near }) {
@@ -179,29 +181,6 @@ function Rocks({ terrain, color }) {
   );
 }
 
-function Minimap({ sim, site, image, terrain }) {
-  const s = 130 / site.size;
-  const toMap = (x, z) => [65 - x * s, 65 - z * s]; // vista desde arriba con el norte (+z) hacia arriba
-  const [rx, rz] = toMap(sim.x, sim.z);
-  return (
-    <svg className="minimap" viewBox="0 0 130 130" aria-label="Minimapa">
-      <rect width="130" height="130" rx="8" />
-      {image && <image href={image} x="0" y="0" width="130" height="130" preserveAspectRatio="none" opacity="0.9" />}
-      {sim.difficulty.sand && terrain.sand.map((p, i) => {
-        const [cx, cz] = toMap(p.x, p.z);
-        return <circle key={i} cx={cx} cy={cz} r={p.r * s} className="sand" />;
-      })}
-      {site.pois.map((p) => {
-        const [px, pz] = toMap(p.x, p.z);
-        return <circle key={p.id} cx={px} cy={pz} r="4" fill={POI_COLOR[sim.pois[p.id]]} />;
-      })}
-      <g transform={`translate(${rx} ${rz}) rotate(${(-sim.heading * 180) / Math.PI})`}>
-        <path d="M0,-6 L4,5 L0,3 L-4,5 Z" fill="#fff" />
-      </g>
-    </svg>
-  );
-}
-
 function useKeyboard(inputRef, onAnalyze, onToggleView, onFault, onDeploy) {
   useEffect(() => {
     const keys = new Set();
@@ -215,7 +194,7 @@ function useKeyboard(inputRef, onAnalyze, onToggleView, onFault, onDeploy) {
       const k = e.key.toLowerCase();
       if (k === 'e' || k === ' ') { e.preventDefault(); onAnalyze(); return; }
       if (k === 'c') { onToggleView(); return; }
-      if (k === 'f') { onFault(); return; }
+      if (k === 'f' && DEBUG) { onFault(); return; }
       if (k === 'g') { onDeploy(); return; }
       if (k.startsWith('arrow')) e.preventDefault();
       keys.add(k); update();
@@ -225,14 +204,6 @@ function useKeyboard(inputRef, onAnalyze, onToggleView, onFault, onDeploy) {
     window.addEventListener('keyup', up);
     return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
   }, []);
-}
-
-/** Botón táctil que se mantiene presionado (para tablets). */
-function HoldButton({ label, onChange }) {
-  return (
-    <button className="pad" onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); onChange(true); }}
-      onPointerUp={() => onChange(false)} onPointerCancel={() => onChange(false)}>{label}</button>
-  );
 }
 
 /** Selección de dificultad antes de empezar. */
@@ -371,13 +342,9 @@ export default function Exploration({ design, missionId, onExit, counts = true }
     if (deployOn) { viewBeforeArm.current = viewRef.current; changeView('arm'); }
     else if (viewBeforeArm.current) { changeView(viewBeforeArm.current); viewBeforeArm.current = null; }
   }, [deployOn]);
-  const spot = sim && !sim.antenna.deployed ? siteQuality(sim, terrain, sim.x, sim.z) : null;
 
-  const nearPoi = sim?.near && site.pois.find((p) => p.id === sim.near);
   const setInput = (key, value) => { inputRef.current = { ...inputRef.current, [key]: value }; };
-  const hours = sim ? Math.floor(sim.phase * site.hours_per_sol) : 0;
   const meters = (units) => num(Math.round(units * terrain.metersPerUnit));
-  const cmdArrow = (i) => (i.fwd > 0 ? '▲' : i.fwd < 0 ? '▼' : '') + (i.turn > 0 ? '◀' : i.turn < 0 ? '▶' : '') || '■';
 
   return (
     <div className="explore">
@@ -391,92 +358,10 @@ export default function Exploration({ design, missionId, onExit, counts = true }
       {sim && difficulty && deployOn && <ArmPanel sim={sim} onAction={onArm} setArmInput={setArmInput} metersPerUnit={terrain.metersPerUnit} />}
 
       {sim && difficulty && (
-        <div className={`hud ${view === 'cabin' || view === 'arm' ? 'cabin-mode' : ''} ${faultOn || deployOn ? 'fault-mode' : ''}`}>
-          <div className="hud-top">
-            <div className="hud-card">
-              <b>{site.name} <span className={`badge diff-${difficulty}`}>{sim.difficulty.icon} {sim.difficulty.name}</span></b>
-              <span>{sim.isDay ? (sim.dust < 1 ? '🌪️' : '☀️') : '🌙'} {t('Sol')} {Math.min(sim.sol, sim.sols)}/{sim.sols} · {String(hours).padStart(2, '0')}:00 h</span>
-              <div className="bar"><div className="fill ok" style={{ width: `${(sim.t / sim.totalTime) * 100}%` }} /></div>
-              {sim.isDay && sim.faultsLeft > 0 && <small className="value warn">{t('🌙 Anochece en {s} s · ¡ojo con las fallas!', { s: Math.ceil(sim.nightIn ?? 0) })}</small>}
-            </div>
-            <div className="hud-card">
-              <span>🔋 {t('Batería')} {Math.round(sim.battery)} / {sim.cap} Wh</span>
-              <div className="bar big"><div className={`fill ${sim.battery / sim.cap < 0.25 ? 'bad' : sim.battery / sim.cap < 0.5 ? 'warn' : 'ok'}`} style={{ width: `${(sim.battery / sim.cap) * 100}%` }} /></div>
-              <small className={sim.flow >= 0 ? 'value ok' : 'value bad'}>
-                {sim.flow >= 0 ? `▲ ${t('cargando')}` : `▼ ${t('gastando')}`} {Math.abs(Math.round(sim.flow))} W
-                {sim.hibernating && ` · 😴 ${t('hibernando')}`}{sim.inShadow && ` · 🌑 ${t('sombra')}`}
-              </small>
-            </div>
-            <div className="hud-card">
-              <span>📦 {t('Por enviar')}: {Math.round(sim.queue.reduce((s, q) => s + q.remaining, 0))} MB</span>
-              <span>{sim.transmitting ? (sim.relayActive ? t('📡 ¡Enviando a la Tierra!') : t('📡 Enviando por tu antena repetidora')) : sim.relayActive ? t('🛰️ {relay} disponible', { relay: site.relay.name }) : t('🛰️ Próximo contacto en {s} s', { s: Math.ceil(sim.relayIn) })}</span>
-              {sim.antenna.deployed && <span className={sim.antennaLink ? 'value ok' : 'muted'}>📡 {t('Antena')}: {sim.antennaLink ? t('en alcance') : t('fuera de alcance')}</span>}
-              {spot && <span>📍 {t('Lugar para antena')}: <b className="stars-inline">{[1, 2, 3].map((n) => <span key={n} className={n <= spot.stars ? 'on' : ''}>★</span>)}</b> <small className="muted">{spot.reasons[0]}</small></span>}
-              <span>🔬 {t('Ciencia en la Tierra')}: <b>{sim.science}</b> / {sim.maxScience}</span>
-            </div>
-            {difficulty !== 'explorer' && (
-              <div className="hud-card">
-                <span>⚙️ {t('Ruedas')} {Math.round(sim.wheelHealth)}%</span>
-                <div className="bar"><div className={`fill ${sim.wheelHealth < 40 ? 'bad' : sim.wheelHealth < 70 ? 'warn' : 'ok'}`} style={{ width: `${sim.wheelHealth}%` }} /></div>
-                {!parts.solar.constant && <span>🟫 {t('Polvo en paneles')} {Math.round(sim.panelDust * 100)}%</span>}
-                <span className={sim.slopeDeg > (sim.difficulty.warnTipDeg ?? 99) ? 'value bad' : ''}>📐 {t('Pendiente')} {Math.round(sim.slopeDeg)}°{sim.inSand && ` · 🏖️ ${t('arena')}`}</span>
-              </div>
-            )}
-            {sim.signalDelay > 0 && (
-              <div className="hud-card signal">
-                <span>📡 {t('Retraso de señal')}: <b>{sim.signalDelay} s</b></span>
-                <span>{t('Tú envías')}: <b>{cmdArrow(inputRef.current)}</b> · {t('El rover hace')}: <b>{cmdArrow(sim.applied)}</b></span>
-              </div>
-            )}
-            {terrain.elevationAt && (
-              <div className="hud-card">
-                <span>⛰️ {t('Altitud real')}: <b>{num(Math.round(terrain.elevationAt(sim.x, sim.z)))} m</b></span>
-                <small className="muted">{t('dato')} {site.body === 'mars' ? 'HiRISE' : 'LOLA'} · NASA · {t('recorrido')} {meters(sim.distance)} m</small>
-              </div>
-            )}
-            <span style={{ flex: 1 }} />
-            <button className="small" disabled={!canDeploy(simRef.current)} onClick={deploy} title={t('Plantar la antena repetidora con el brazo robótico (tecla G)')}>📡 {t('Plantar antena')} (G)</button>
-            <button className="small" disabled={faultOn || deployOn} onClick={fireFault} title={t('Dispara una falla ahora (tecla F)')}>🚨 {t('Probar falla')} (F)</button>
-            <button className="small" disabled={faultOn} onClick={toggleView}>{view === 'cabin' ? `🎥 ${t('Vista exterior')} (C)` : `🎥 ${t('Cabina')} (C)`}</button>
-            <button className="small" onClick={() => { simRef.current.ended = true; }}>🏁 {t('Terminar')}</button>
-            <button className="small" onClick={onExit}>✕ {t('Salir')}</button>
-          </div>
-
-          <div className="hud-side">
-            <Minimap sim={sim} site={site} image={mapImage} terrain={terrain} />
-            <ul className="poi-list">
-              {site.pois.map((p) => (
-                <li key={p.id} style={{ color: POI_COLOR[sim.pois[p.id]] }}>
-                  {sim.pois[p.id] === 'sent' ? '✅' : sim.pois[p.id] === 'locked' ? '🔒' : p.icon} {p.name}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="hud-bottom">
-            <div className={`copilot-bubble explore-msg ${message.kind}`}>
-              <span className="copilot-avatar small">🤖</span>
-              <p>{message.text}</p>
-            </div>
-            {nearPoi && !sim.analyzing && !faultOn && (
-              <button className="primary analyze" onClick={analyze}>🔬 {t('ANALIZAR')} "{nearPoi.name}" (E)</button>
-            )}
-            {sim.analyzing && (
-              <div className="analyzing">{t('Analizando…')} <div className="bar big"><div className="fill ok" style={{ width: `${sim.analyzing.progress * 100}%` }} /></div></div>
-            )}
-          </div>
-
-          <div className="pads">
-            <div />
-            <HoldButton label="▲" onChange={(v) => setInput('fwd', v ? 1 : 0)} />
-            <div />
-            <HoldButton label="◀" onChange={(v) => setInput('turn', v ? 1 : 0)} />
-            <HoldButton label="▼" onChange={(v) => setInput('fwd', v ? -1 : 0)} />
-            <HoldButton label="▶" onChange={(v) => setInput('turn', v ? -1 : 0)} />
-          </div>
-          <div className="keys-help">{t('Mover: W A S D o flechas · Analizar: E · Cabina: C · Antena: G · Falla: F')}</div>
-          {site.credit && <div className="dem-credit">{site.credit}</div>}
-        </div>
+        <Hud sim={sim} site={site} parts={parts} terrain={terrain} difficulty={difficulty} view={view} mapImage={mapImage} message={message}
+          input={inputRef.current} canDeploy={canDeploy(simRef.current)} debug={DEBUG} setInput={setInput}
+          onDeploy={deploy} onFault={fireFault} onToggleView={toggleView} onAnalyze={analyze}
+          onEnd={() => { simRef.current.ended = true; }} onExit={onExit} />
       )}
 
       {ended && (

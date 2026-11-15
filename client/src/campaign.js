@@ -36,6 +36,16 @@ export const BADGES = translatable([
 ]);
 export const BADGE_POINTS = 100;
 
+// Avatar del jugador (se elige en el inicio y no se borra al reiniciar la campaña).
+export const AVATARS = ['🧑‍🚀', '👩‍🚀', '👨‍🚀', '👧', '👦', '🧒', '👩', '👨', '🤖', '👽', '🐱', '🦊'];
+const AVATAR_KEY = 'smd-avatar';
+export function loadAvatar() {
+  try { const saved = localStorage.getItem(AVATAR_KEY); return AVATARS.includes(saved) ? saved : AVATARS[0]; } catch { return AVATARS[0]; }
+}
+export function saveAvatar(avatar) {
+  try { localStorage.setItem(AVATAR_KEY, avatar); } catch { /* sin almacenamiento */ }
+}
+
 export const emptyProgress = () => ({ missions: {}, badges: {}, seen: [] });
 
 export function loadProgress() {

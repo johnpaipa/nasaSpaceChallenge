@@ -3,7 +3,8 @@
 import { locale, getLang } from '../../shared/i18n.js';
 
 let ctx = null;
-const prefs = { muted: read('smd-muted') === '1', voice: read('smd-voice') === '1' };
+// La voz de Orbi viene encendida; se apaga con "Leer siempre" o al silenciar el juego.
+const prefs = { muted: read('smd-muted') === '1', voice: read('smd-voice') !== '0' };
 
 function read(key) { try { return localStorage.getItem(key); } catch { return null; } }
 function write(key, v) { try { localStorage.setItem(key, v); } catch { /* sin almacenamiento */ } }
@@ -79,18 +80,44 @@ export function setMuted(v) { prefs.muted = v; write('smd-muted', v ? '1' : '0')
 export const voiceOn = () => prefs.voice;
 export function setVoice(v) { prefs.voice = v; write('smd-voice', v ? '1' : '0'); if (!v) stopSpeaking(); }
 
+/** ¿El navegador puede hablar? (Algunos no traen síntesis de voz o no tienen voces instaladas.) */
+export const canSpeak = () => typeof window !== 'undefined' && 'speechSynthesis' in window;
+
+// Se guarda la locución en curso: algunos navegadores la cortan si se pierde la referencia.
+let utterance = null;
+let pending = null;
+
 export function speak(text, force = false) {
-  if ((!prefs.voice && !force) || prefs.muted || !('speechSynthesis' in window)) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text.replace(/[★☆✅🔬🛰️🧭📡⭐]/gu, ''));
+  if ((!prefs.voice && !force) || prefs.muted || !canSpeak()) return;
+  const synth = window.speechSynthesis;
+  synth.cancel();
+  clearTimeout(pending);
+  // Sin emojis ni símbolos: si no, la voz los lee uno por uno.
+  const u = new SpeechSynthesisUtterance(text.replace(/\p{Extended_Pictographic}|[\uFE0F\u200D★☆→←]/gu, ''));
   u.lang = locale();
   u.rate = 0.95;
   u.pitch = 1.15;
-  const voice = window.speechSynthesis.getVoices().find((v) => v.lang.startsWith(getLang()));
-  if (voice) u.voice = voice;
-  window.speechSynthesis.speak(u);
+  utterance = u;
+  let started = false;
+  const start = () => {
+    if (started || utterance !== u) return;
+    started = true;
+    const voice = synth.getVoices().find((v) => v.lang.toLowerCase().startsWith(getLang()));
+    if (voice) u.voice = voice;
+    synth.resume();
+    synth.speak(u);
+  };
+  // Hablar justo después de cancel() se pierde en algunos navegadores; y las
+  // voces pueden tardar en cargar la primera vez.
+  if (synth.getVoices().length > 0) pending = setTimeout(start, 80);
+  else {
+    synth.addEventListener('voiceschanged', start, { once: true });
+    pending = setTimeout(start, 700);
+  }
 }
 
 export function stopSpeaking() {
-  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  utterance = null;
+  clearTimeout(pending);
+  if (canSpeak()) window.speechSynthesis.cancel();
 }

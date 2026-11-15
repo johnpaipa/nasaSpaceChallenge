@@ -13,7 +13,7 @@ await page.goto('http://localhost:3001', { waitUntil: 'networkidle0' });
 await page.evaluate(() => { localStorage.clear(); localStorage.setItem('smd-tutorial-seen', '1'); localStorage.setItem('smd-muted', '1'); localStorage.setItem('smd-lang', 'es'); });
 await page.reload({ waitUntil: 'networkidle0' });
 await page.screenshot({ path: `${shots}/campaign-1-home.png`, fullPage: true });
-console.log('cap. 2 bloqueado al inicio:', await page.evaluate(() => [...document.querySelectorAll('button.chapter')][1].disabled));
+console.log('cap. 2 bloqueado al inicio:', await page.evaluate(() => [...document.querySelectorAll('button.chapter-card')][1].disabled));
 console.log('comenzar:', await click('Comenzar capítulo'));
 await wait(1500);
 console.log('pestaña ciencia:', await click('Ciencia', 'nav.tabs button'));
@@ -27,7 +27,7 @@ await page.screenshot({ path: `${shots}/campaign-2-report.png`, fullPage: true }
 const report = await page.evaluate(() => document.body.innerText);
 console.log('nota:', report.match(/Puntaje: \d+/)?.[0], '| puntos:', report.match(/\+\d+\s*puntos de carrera/)?.[0], '| desbloqueó cap. 2:', report.includes('Capítulo 2 desbloqueado'), '| medallas:', (report.match(/Nueva medalla: [^!]+/g) || []).join(', '));
 await click('Rediseñar'); await wait(800); await click('Salir'); await wait(800);
-console.log('cap. 2 desbloqueado en el mapa:', await page.evaluate(() => ![...document.querySelectorAll('button.chapter')][1].disabled));
+console.log('cap. 2 desbloqueado en el mapa:', await page.evaluate(() => ![...document.querySelectorAll('button.chapter-card')][1].disabled));
 await page.screenshot({ path: `${shots}/campaign-3-home-after.png`, fullPage: true });
 console.log('errores:', errors.length ? errors.join('\n') : 'ninguno');
 await browser.close();

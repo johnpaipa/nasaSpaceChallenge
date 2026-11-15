@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
+<script>if(window.parent!==window)document.documentElement.setAttribute("data-theme","dark")</script>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hangar NASA: ensamblaje y lanzamiento</title>
+<title>MISIÓN: BEYOND · Taller de ensamblaje</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--panel:#ffffff;--ink:#10172b;--line:#c9d2e4;--accent:#e8590c;--ok:#0f8a6e;--bad:#c92a3a;
@@ -52,27 +53,85 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 #orbitMap canvas{display:block;border-radius:6px}
 #orbitMap span{display:block;margin-top:4px;font-size:.72rem;font-weight:600;color:var(--ink)}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-</style>
+/* Guía de ensamblaje y fichas de historia (datos de la guía "Propulsión con el SLS" de la NASA) */
+#guideBtn{top:50px;font-family:inherit;cursor:pointer}
+#guide{position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;background:rgba(5,8,20,.8);padding:14px}
+#guide.on{display:flex}
+.gbox{width:min(860px,100%);max-height:100%;display:flex;flex-direction:column;background:var(--panel);color:var(--ink);border:2px solid var(--line);border-radius:14px;padding:14px 16px}
+.gbox h1{margin:0 0 8px;font-size:1.3rem}
+.gtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.gtabs button,.gclose{padding:8px 12px;border:2px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
+.gtabs button.on{border-color:var(--accent);color:var(--accent)}
+.gbody{overflow:auto;min-height:0;font-size:.92rem;line-height:1.45}
+.gbody h2{margin:10px 0 4px;font-size:1rem;color:var(--accent)}
+.gbody p{margin:0 0 8px}
+.gasm{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:start}
+.gasm svg{width:100%;height:auto;background:rgba(127,140,170,.12);border-radius:10px}
+.gasm ol{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.gasm li{display:grid;grid-template-columns:26px 1fr;gap:8px;padding:6px 8px;border:1px solid var(--line);border-radius:8px}
+.gasm li b{display:block}.gasm li small{opacity:.8}
+.gasm li .n{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.8rem;border:2px solid var(--line)}
+.gasm li.done .n{background:var(--ok);border-color:var(--ok);color:#04130c}
+.gasm li.cur{border-color:var(--accent)}.gasm li.cur .n{background:var(--accent);border-color:var(--accent);color:#1a0d02}
+.gasm svg .p{stroke:#8a93a8;stroke-width:1;opacity:.45}.gasm svg .p.done{opacity:1}.gasm svg .p.cur{opacity:1;stroke:var(--accent);stroke-width:3}
+.gasm svg text{font:700 9px sans-serif;fill:var(--ink)}
+.gtable{width:100%;border-collapse:collapse;font-size:.85rem}
+.gtable th,.gtable td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+.gcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px}
+.gcard{padding:8px 10px;border:1px solid var(--line);border-radius:10px}
+.gcard.on{border-color:var(--accent)}
+.gcard b{display:block}
+.gfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;font-size:.75rem;opacity:.8}
+.gclose{background:var(--accent);border-color:var(--accent);color:#1a0d02;opacity:1;font-size:.95rem}
+#info{display:none;margin:8px 0 0;padding:8px 12px;border-left:4px solid var(--accent);background:rgba(127,140,170,.12);border-radius:8px;font-size:.9rem;line-height:1.4}
+#info b{color:var(--accent)}#info ul{margin:4px 0 0;padding-left:18px}
+@media (max-width:600px){.gasm{grid-template-columns:1fr}.gasm svg{max-width:150px;margin:auto}}
+#part-card{width:min(760px,calc(100% - 24px));max-height:90vh;overflow:auto;background:#101010;color:#f5f5f2;border:1px solid #555;border-radius:14px;padding:24px;font:16px/1.5 system-ui}#part-card::backdrop{background:#000b}#part-card img{width:100%;height:280px;object-fit:contain;background:#202020;border-radius:8px}#part-card button{min-height:44px;padding:10px 18px;cursor:pointer;border-radius:8px}#part-card a{color:#e7b947}#part-card footer{display:flex;gap:12px;justify-content:flex-end;margin-top:20px}#part-card figcaption{font-size:13px;color:#bbb}#part-card figure{margin:16px 0}</style>
+<link rel="stylesheet" href="workshop.css">
 </head>
 <body>
 <div id="app">
   <div class="pill" id="hud"><span id="step">Hangar de ensamblaje</span></div>
   <div class="pill" id="tel"></div>
   <button class="pill" id="camBtn">Cámara: suelo</button>
+  <button class="pill" id="guideBtn" style="display:none">📖 Guía de ensamblaje</button>
   <div id="cat"><h2>Catálogo de piezas</h2></div>
   <div id="pad"><button data-k="w" aria-label="Avanzar">▲</button><button data-k="a" aria-label="Izquierda">◀</button><button data-k="s" aria-label="Retroceder">▼</button><button data-k="d" aria-label="Derecha">▶</button></div>
   <div id="fx"></div><div id="labels"></div><div id="fade"></div><ol id="tl"></ol>
   <div id="orbitMap"><canvas width="150" height="150"></canvas><span id="orbitMapLbl"></span></div>
   <div id="mis"><div class="mbox"><h1>Elige tu misión</h1><p>Escoge el destino. Tu misión cambia la carga que llevas y las fases del viaje.</p><div id="mcards"></div></div></div>
-  <div id="dlg" style="display:none"><div id="who">Control de misión</div><p id="say"></p><div id="opts"></div></div>
+  <div id="dlg" style="display:none"><div id="who">Control de misión</div><p id="say"></p><div id="info"></div><div id="opts"></div><small id="workshop-audio-status" role="status" aria-live="polite"></small></div>
+  <div id="guide"><div class="gbox"><h1>📖 Guía del cohete</h1><div class="gtabs" id="gtabs"></div><div class="gbody" id="gbody"></div>
+   <div class="gfoot"><span>Datos: «Propulsión con el Sistema de Lanzamiento Espacial», guía del educador de la NASA.</span><button class="gclose" id="gclose">Entendido</button></div></div></div>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="three.min.js"></script>
 <script>
 var app=document.getElementById("app"),sayEl=document.getElementById("say"),optsEl=document.getElementById("opts"),stepEl=document.getElementById("step"),fxEl=document.getElementById("fx"),lblBox=document.getElementById("labels"),catEl=document.getElementById("cat"),fadeEl=document.getElementById("fade"),padEl=document.getElementById("pad"),telEl=document.getElementById("tel"),camBtn=document.getElementById("camBtn"),tlEl=document.getElementById("tl"),misEl=document.getElementById("mis");
 function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function rnd(){return Math.random()}
-function say(txt,opts){sayEl.textContent=txt;optsEl.innerHTML="";(opts||[]).forEach(function(o){var b=document.createElement("button");b.textContent=o[0];b.onclick=o[1];optsEl.appendChild(b)})}
+/* Voz de Control de misión: usa las mismas preferencias que el juego (silencio y "leer siempre"). */
+var VOICE=(function(){try{return localStorage.getItem("smd-muted")!=="1"&&localStorage.getItem("smd-voice")!=="0"}catch(e){return true}})(),lastSaid="",utter=null,voiceTimer=null,voiceLang="es",voiceError="",speechRun=0;
+function voiceList(){try{return window.speechSynthesis?window.speechSynthesis.getVoices():[]}catch(e){return []}}
+function speak(t,immediate){if(!VOICE||!window.speechSynthesis)return false;
+ try{var sy=window.speechSynthesis,prepared=window.workshopSpeech?window.workshopSpeech(String(t),voiceLang):{text:String(t),lang:voiceLang};
+  if(prepared.text===lastSaid&&sy.speaking)return true;lastSaid=prepared.text;clearTimeout(voiceTimer);var run=++speechRun;sy.cancel();
+  var lang=(prepared.lang||voiceLang)==="en"?"en-US":"es-ES";
+  function launch(){if(run!==speechRun||!VOICE)return;var voices=voiceList(),v=voices.find(function(x){return x.lang.toLowerCase()===lang.toLowerCase()})||voices.find(function(x){return x.lang.toLowerCase().indexOf(lang.slice(0,2).toLowerCase())===0});
+   var st=document.getElementById("workshop-audio-status");
+   voiceError=v?"":"No se encontraron voces enumeradas; probando la voz predeterminada del sistema.";if(st)st.textContent=voiceError;
+   utter=new SpeechSynthesisUtterance(prepared.text);utter.lang=lang;if(v)utter.voice=v;utter.rate=1;
+   utter.onstart=function(){var btn=document.getElementById("workshop-listen");if(btn)btn.textContent="Detener"};
+   utter.onend=function(){voiceError="";if(st)st.textContent="";var btn=document.getElementById("workshop-listen");if(btn)btn.textContent="Escuchar"};
+   utter.onerror=function(e){var code=e.error||"error de audio";if(code==="canceled"||code==="interrupted"){if(st)st.textContent=""}else{voiceError="No se pudo reproducir la voz ("+code+"). Comprueba que haya una voz de "+(lang==="en-US"?"inglés":"español")+" instalada y que el navegador tenga salida de audio.";if(st)st.textContent=voiceError}var btn=document.getElementById("workshop-listen");if(btn)btn.textContent="Escuchar"};
+   try{sy.resume();sy.speak(utter)}catch(e){voiceError="No se pudo iniciar el audio. Pulsa Escuchar de nuevo.";if(st)st.textContent=voiceError}
+  }
+  if(immediate){launch()}else{voiceTimer=setTimeout(function(){if(!VOICE)return;if(voiceList().length)launch();else{var done=false,old=sy.onvoiceschanged;sy.onvoiceschanged=function(){if(done)return;done=true;sy.onvoiceschanged=old;launch()};setTimeout(function(){if(!done){done=true;sy.onvoiceschanged=old;launch()}},1200)}},120)}
+  return true
+ }catch(e){voiceError="No se pudo iniciar la voz en este navegador.";var st=document.getElementById("workshop-audio-status");if(st)st.textContent=voiceError;return false}}
+window.addEventListener("pagehide",function(){speechRun++;clearTimeout(voiceTimer);try{window.speechSynthesis.cancel()}catch(e){}});
+/* `spoken`: texto alternativo para leer en voz alta (por defecto, el mismo). */
+function say(txt,opts,spoken){speak(spoken||txt);sayEl.textContent=txt;optsEl.innerHTML="";(opts||[]).forEach(function(o){var b=document.createElement("button");b.textContent=o[0];b.onclick=o[1];optsEl.appendChild(b)})}
 var fxT;function fx(t,ms){fxEl.textContent=t;fxEl.classList.add("on");clearTimeout(fxT);fxT=setTimeout(function(){fxEl.classList.remove("on")},ms||2000)}
 
 /* ===== Escena base ===== */
@@ -144,12 +203,7 @@ var ENV=(function(){
  function gravTex(){var c=cvs(256,256),g=c.getContext("2d");g.fillStyle="#9a958a";g.fillRect(0,0,256,256);
   for(var i=0;i<4200;i++){var v=(90+rnd()*110)|0;g.fillStyle="rgb("+v+","+(v-4)+","+(v-12)+")";g.globalAlpha=.7;g.fillRect(rnd()*256,rnd()*256,1+rnd()*2.5,1+rnd()*2.5)}
   g.globalAlpha=1;g.fillStyle="rgba(40,38,34,.3)";g.fillRect(124,0,8,256);return ctex(c,1,13)}
- function meat(g,x,y,r){g.save();g.beginPath();g.arc(x,y,r,0,6.283);g.clip();g.fillStyle="#0b3d91";g.fillRect(x-r,y-r,2*r,2*r);
-  for(var i=0;i<46;i++){g.fillStyle="rgba(255,255,255,"+(.35+rnd()*.65)+")";g.beginPath();g.arc(x+(rnd()*2-1)*r,y+(rnd()*2-1)*r,Math.max(.6,r*(.01+rnd()*.025)),0,6.283);g.fill()}
-  g.strokeStyle="#ffffff";g.lineWidth=r*.07;g.beginPath();g.ellipse(x,y+r*.05,r*1.0,r*.36,-.5,.3,3.6);g.stroke();
-  g.strokeStyle="#fc3d21";g.lineWidth=r*.1;g.lineCap="round";g.beginPath();g.moveTo(x-r*.8,y+r*.55);g.quadraticCurveTo(x-r*.05,y-r*.1,x+r*.75,y-r*.5);g.stroke();
-  g.restore();g.fillStyle="#fff";g.font="bold "+(r*.5)+"px Arial";g.textAlign="center";g.fillText("NASA",x,y+r*.2);
-  g.lineWidth=r*.05;g.strokeStyle="#ffffff";g.beginPath();g.arc(x,y,r,0,6.283);g.stroke()}
+ function meat(g,x,y,r){g.save();g.fillStyle="#151515";g.fillRect(x-r,y-r,r*2,r*2);g.strokeStyle="#e7b947";g.lineWidth=r*.05;g.beginPath();g.ellipse(x,y,r*.85,r*.35,-.4,0,Math.PI*2);g.stroke();g.fillStyle="#fff";g.font="bold "+r*.22+"px Arial";g.textAlign="center";g.fillText("BEYOND",x,y+r*.12);g.restore()}
  function flagCv(w,h){var c=cvs(w,h),g=c.getContext("2d");for(var i=0;i<13;i++){g.fillStyle=i%2?"#ffffff":"#b22234";g.fillRect(0,i*h/13,w,h/13+1)}
   g.fillStyle="#3c3b6e";g.fillRect(0,0,w*.4,h*7/13);g.fillStyle="#fff";
   for(var r=0;r<5;r++)for(var k=0;k<6;k++)g.fillRect(w*.4*(k+.6)/6.2,h*7/13*(r+.55)/5.3,w*.016,w*.016);return c}
@@ -284,7 +338,7 @@ var ce=mesh(new THREE.PlaneGeometry(56,56),0xdfe4ec,0,30,0);ce.rotation.x=Math.P
 [[0,-28,56,.6],[0,28,56,.6],[-28,0,.6,56],[28,0,.6,56]].forEach(function(w){box(w[2],30,w[3],0xcfd6e0,w[0],15,w[1]);box(w[2]+.1,1.6,w[3]+.1,0x0b3d91,w[0],4,w[1])});
 function sign(t,s,w,h,x,y,z,ry){var c=document.createElement("canvas");c.width=1024;c.height=256;var g=c.getContext("2d");g.fillStyle="#0b3d91";g.fillRect(0,0,1024,256);g.fillStyle="#fff";g.textAlign="center";g.font="bold 130px Arial";g.fillText(t,512,150);g.font="bold 42px Arial";g.fillText(s,512,215);
  var m=mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)}),x,y,z);m.rotation.y=ry||0;scene.add(m)}
-sign("NASA","CENTRO DE ENSAMBLAJE · HANGAR 7",20,5,0,18,-27.65,0);sign("NASA","SEGURIDAD PRIMERO",14,3.5,0,16,27.65,Math.PI);sign("ZONA","PRUEBAS DE MOTORES",10,2.6,27.65,12,-12,-Math.PI/2);sign("ZONA","ALMACÉN DE PIEZAS",10,2.6,-27.65,12,10,Math.PI/2);
+sign("BEYOND","CENTRO DE ENSAMBLAJE · HANGAR 7",20,5,0,18,-27.65,0);sign("BEYOND","SEGURIDAD PRIMERO",14,3.5,0,16,27.65,Math.PI);sign("ZONA","PRUEBAS DE MOTORES",10,2.6,27.65,12,-12,-Math.PI/2);sign("ZONA","ALMACÉN DE PIEZAS",10,2.6,-27.65,12,10,Math.PI/2);
 var lm=new THREE.MeshBasicMaterial({color:0xffffff});
 for(var i=0;i<16;i++)box(4,.2,4,lm,(i%4-1.5)*12,29.8,(Math.floor(i/4)-1.5)*12);
 [-20,0,20].forEach(function(z){box(56,1.2,1,0x778,0,28.5,z)});[-14,14].forEach(function(x){box(1,1.2,56,0x778,x,28.5,0)});
@@ -318,7 +372,7 @@ var plight=new THREE.PointLight(0xff8a3d,0,150);scene.add(plight);
 
 /* ===== Piezas del cohete (detalladas) ===== */
 function bodyTex(band,logo){var c=document.createElement("canvas");c.width=256;c.height=512;var g=c.getContext("2d");g.fillStyle="#f4f6fb";g.fillRect(0,0,256,512);g.fillStyle=band;g.fillRect(0,420,256,92);g.fillStyle="#c8cfdd";for(var y=40;y<420;y+=60)g.fillRect(0,y,256,2);
- if(logo){g.fillStyle="#d1261b";g.font="bold 70px Arial";g.save();g.translate(80,330);g.rotate(-Math.PI/2);g.fillText("NASA",0,0);g.restore()}return new THREE.CanvasTexture(c)}
+ if(logo){g.fillStyle="#d1261b";g.font="bold 70px Arial";g.save();g.translate(80,330);g.rotate(-Math.PI/2);g.fillText("BEYOND",0,0);g.restore()}return new THREE.CanvasTexture(c)}
 function bodyMat(band,logo){return new THREE.MeshStandardMaterial({map:bodyTex(band,logo),roughness:.45,metalness:.15})}
 function bell(s,x,z){var pts=[];for(var i=0;i<=12;i++){var y=i/12;pts.push(new THREE.Vector2(.1+.26*Math.pow(1-y,1.6),y))}
  var g=new THREE.Group();g.add(mesh(new THREE.LatheGeometry(pts,24),M(0x4a4f5a,.8,.35)));var r=mesh(new THREE.TorusGeometry(.36,.025,8,24),0xb87333);r.rotation.x=Math.PI/2;g.add(r);g.scale.setScalar(s);g.position.set(x,1-s,z);return g}
@@ -339,15 +393,58 @@ var DEF=[
  {id:"fair",name:"Cofia",col:"#dfe5f2",h:1.6,fn:"protege la carga durante el ascenso y se abre al salir de la atmósfera",mk:function(g){var pts=[];for(var i=0;i<=18;i++){var t=i/18;pts.push(new THREE.Vector2(.62*Math.pow(1-Math.pow(t,2.1),.75),1.6*t))}
   for(var k=0;k<2;k++){var h=mesh(new THREE.LatheGeometry(pts,24,k*Math.PI,Math.PI),M(0xeef1f8,.3,.4));g.add(h);g.userData["h"+k]=h}}}
 ];
+/* Propulsores sólidos: van a los lados de la primera etapa (en diagonal, entre las aletas). */
+DEF.push({id:"srb",name:"Propulsores sólidos",col:"#f4f6fb",h:3,fn:"se sujetan a los lados, dan casi todo el empuje del despegue y se sueltan cuando se les acaba el propelente",mk:function(g){
+ [.785,3.927].forEach(function(a,k){var b=new THREE.Group();b.position.set(Math.cos(a)*.86,0,Math.sin(a)*.86);
+  b.add(cyl(.2,.2,2.5,0xf4f6fb,0,1.4,0,20));b.add(mesh(new THREE.ConeGeometry(.2,.42,20),0xf4f6fb,0,2.86,0));b.add(cyl(.13,.23,.3,0x4a4f5a,0,.05,0,16));
+  [.65,1.15,1.65,2.15].forEach(function(y){var t=mesh(new THREE.TorusGeometry(.2,.018,8,20),0x14161d,0,y,0);t.rotation.x=Math.PI/2;b.add(t)});
+  g.add(b);g.userData["b"+k]=b})}});
+/* Qué es cada pieza en el SLS real y un poco de su historia (fuente: guía del educador de la NASA). */
+var HIST={
+ motor:{sls:"4 motores RS-25",h:["Son motores del transbordador espacial: se modernizaron 16 de ellos con un nuevo controlador y aislamiento en la tobera.","Cada RS-25 da 1,8 millones de newtons de empuje, más que cuando volaba en el transbordador.","Los cuatro queman hidrógeno y oxígeno líquidos que les llegan desde la etapa central."]},
+ s1:{sls:"Etapa central",h:["Mide más de 60 metros de alto y 8,41 metros de diámetro.","Guarda 2,76 millones de litros de hidrógeno y oxígeno líquidos superenfriados para los motores RS-25.","Se construye en Michoud, Nueva Orleans, con la herramienta de soldadura por fricción y agitación más grande del mundo."]},
+ srb:{sls:"2 propulsores de cohetes sólidos",h:["Cada propulsor da 16 millones de newtons de empuje: juntos son la mayor parte de la fuerza del despegue.","Vienen del transbordador espacial, pero pasaron de 4 a 5 segmentos de propelente para tener más potencia.","A diferencia de los del transbordador, ya no llevan paracaídas de recuperación."]},
+ inter:{sls:"Adaptador de etapa del vehículo de lanzamiento",h:["En el SLS es la pieza cónica que une la etapa central con la etapa superior.","En las versiones futuras (Bloque 1B y 2) su lugar lo ocupa la sección «entre etapas»."]},
+ s2:{sls:"Etapa de propulsión criogénica provisional (ICPS)",h:["Se adaptó de la segunda etapa de los cohetes Delta IV.","Su motor RL-10 fue el primer motor de hidrógeno y oxígeno líquidos de Estados Unidos, usado en las etapas superiores del programa Apolo-Saturno.","Da 110 093 newtons de empuje y es la que impulsa a la cápsula Orión fuera de la órbita terrestre.","«Criogénico» significa que sus propelentes están enfriados hasta volverse líquidos."]},
+ pay:{sls:"Cápsula Orión o carga científica",h:["El SLS es el único cohete que puede enviar la cápsula Orión, astronautas y grandes cargas a la Luna en una sola misión.","El Bloque 1 puede enviar más de 26 toneladas a órbitas más allá de la Luna.","Su diseño también abre la puerta a misiones científicas robóticas a Marte, Saturno y Júpiter."]},
+ fair:{sls:"Carenado de carga útil",h:["En las versiones de carga del SLS, las naves científicas y los sistemas de exploración viajan bajo el carenado.","Cuando lleva astronautas no hay carenado: en la punta va la cápsula Orión con su sistema de cancelación de lanzamiento."]}
+};
+/* Orden real de montaje (índices de DEF): los propulsores se colocan junto a la primera etapa. */
+var ORDER=[0,1,6,2,3,4,5];
 var rocket=new THREE.Group();rocket.position.set(0,0,RZ0);scene.add(rocket);
-var bases=[],yy=.45;DEF.forEach(function(d,i){if(d.id==="fair"){bases.push(bases[i-1])}else{bases.push(yy);yy+=d.h*K}});
-var parts=[],shelf=shuffle([0,1,2,3,4,5]),chips=[];
-shelf.forEach(function(di,k){var d=DEF[di],g=new THREE.Group();d.mk(g);g.userData.i=di;g.position.set((k-2.5)*4.6,1.1,10);g.scale.setScalar(TS);scene.add(g);
- var pl=box(2.6,.15,2.6,0x2b3140,(k-2.5)*4.6,1.12,10);
+var bases=[],yy=.45;DEF.forEach(function(d,i){if(d.id==="fair"){bases.push(bases[i-1])}else if(d.id==="srb"){bases.push(bases[1])}else{bases.push(yy);yy+=d.h*K}});
+var parts=[],shelf=shuffle([0,1,2,3,4,5,6]),chips=[];
+shelf.forEach(function(di,k){var d=DEF[di],g=new THREE.Group();d.mk(g);g.userData.i=di;g.position.set((k-3)*4.6,1.1,10);g.scale.setScalar(TS);scene.add(g);
+ var pl=box(2.6,.15,2.6,0x2b3140,(k-3)*4.6,1.12,10);
  var l=document.createElement("div");l.className="lbl";l.textContent=(k+1)+". "+d.name;lblBox.appendChild(l);g.userData.l=l;parts[di]=g;
  var c=document.createElement("button");c.className="chip";c.innerHTML="<i style=\"background:"+d.col+"\"></i>";c.appendChild(document.createTextNode((k+1)+". "+d.name));
  c.title=d.fn;
- c.onclick=function(){choose(di)};catEl.appendChild(c);chips[di]=c});
+ c.onclick=function(){inspectPart(di)};catEl.appendChild(c);chips[di]=c});
+
+
+var PART_CARDS = {"motor": {"title": "Motor RS-25", "body": "Los cuatro motores RS-25 de la etapa central del SLS queman hidrógeno y oxígeno líquidos. La tobera dirige los gases de escape para producir empuje.", "source": "https://www.nasa.gov/reference/space-launch-system-rs-25-core-stage-engine/", "image": "parts/motor.jpg", "credit": "Diagrama del motor RS-25 · NASA", "originalImage": "https://www.nasa.gov/wp-content/uploads/2021/10/rs-25_engine_call-outs.jpg"}, "s1": {"title": "Etapa central del SLS", "body": "La etapa central contiene los depósitos de hidrógeno y oxígeno líquidos. También soporta las etapas superiores y transmite el empuje de motores y propulsores.", "source": "https://www.nasa.gov/reference/sls-space-launch-system-core-stage/", "image": "parts/s1.png", "credit": "Ilustración de la etapa central · NASA", "originalImage": "https://www.nasa.gov/wp-content/uploads/2024/07/0080-sls-core-stage-cutout-07122024-copy.png"}, "srb": {"title": "Propulsores sólidos del SLS", "body": "Dos propulsores de cinco segmentos proporcionan la mayor parte del empuje al despegar. Se separan de la etapa central después de consumir su propelente.", "source": "https://www.nasa.gov/reference/space-launch-system-solid-rocket-booster/", "image": "parts/srb.jpg", "credit": "Imagen de propulsión sólida publicada por NASA", "originalImage": "https://www.nasa.gov/wp-content/uploads/2020/02/bole.jpg"}, "s2": {"title": "Etapa superior ICPS", "body": "Esta etapa usa un motor RL10 alimentado por hidrógeno y oxígeno líquidos. En Artemis I dio a Orión el impulso para viajar hacia la Luna.", "source": "https://www.nasa.gov/reference/icps/", "image": "parts/s2.jpg", "credit": "Etapa superior ICPS · NASA/Brandon Hancock", "originalImage": "https://www.nasa.gov/wp-content/uploads/2024/11/nasa-sls-upper-stage-prepped-for-shipment-to-space-coast-dsc00216-cropped.jpg"}, "inter": {"title": "Conexión entre etapas", "body": "El adaptador del SLS Bloque 1 conecta la etapa central con la etapa superior ICPS. El esquema muestra dónde encaja esta conexión en el lanzador real.", "source": "https://www.nasa.gov/reference/icps/", "image": "parts/inter.jpg", "credit": "Esquema del SLS Bloque 1 · NASA", "originalImage": "https://www.nasa.gov/wp-content/uploads/2024/11/sls-4704-sls-rev-32-publicrelease-dac3-16-9-111623-r6.jpg"}, "pay": {"title": "Carga científica: telescopio Webb", "body": "La carga útil realiza la misión. Este ejemplo real muestra el telescopio Webb montado sobre Ariane 5 antes de colocar la cofia. No es el satélite simplificado del juego.", "source": "https://science.nasa.gov/blogs/webb/2021/12/14/webb-placed-on-top-of-ariane-5/", "image": "parts/pay.jpg", "credit": "Webb sobre Ariane 5 · ESA/CNES/Arianespace", "originalImage": "https://science.nasa.gov/wp-content/uploads/2021/12/52682-1024x683-1.jpg"}, "fair": {"title": "Cofia de Ariane 5", "body": "La cofia rodea la carga durante el lanzamiento. Esta fotografía muestra cómo se bajó alrededor del telescopio Webb durante su encapsulado.", "source": "https://svs.gsfc.nasa.gov/14079/", "image": "parts/fair.jpg", "credit": "Encapsulado de Webb · NASA Goddard / Michael McClare", "originalImage": "https://svs.gsfc.nasa.gov/vis/a010000/a014000/a014079/Encapsulation_-_Mid_Level.00360_print.jpg"}};
+var partCard=document.createElement("dialog");partCard.id="part-card";
+partCard.setAttribute("aria-labelledby","part-card-title");document.body.appendChild(partCard);
+partCard.addEventListener("close",function(){keys={};});
+function inspectPart(i){
+ if(mode!=="assembly"||busy)return;
+ var d=DEF[i],c=PART_CARDS[d.id];if(!c)return;
+ keys={};drag=null;
+ partCard.innerHTML='<h2 id="part-card-title"></h2><p class="part-function"></p><figure><img><figcaption></figcaption></figure><h3></h3><p class="part-fact"></p><a target="_blank" rel="noopener noreferrer">Consultar fuente oficial ↗</a><footer><button type="button" class="part-close">Volver</button><button type="button" class="part-assemble">Intentar ensamblar</button></footer>';
+ partCard.querySelector("h2").textContent=d.name;
+ partCard.querySelector(".part-function").textContent="En el juego: "+d.fn+".";
+ var img=partCard.querySelector("img");img.src=c.image;img.alt=c.credit;
+ img.onerror=function(){this.hidden=true;};
+ partCard.querySelector("figcaption").textContent=c.credit;
+ partCard.querySelector("h3").textContent="Ejemplo real: "+c.title;
+ partCard.querySelector(".part-fact").textContent=c.body;
+ partCard.querySelector("a").href=c.source;
+ partCard.querySelector(".part-close").onclick=function(){partCard.close()};
+ var b=partCard.querySelector(".part-assemble");b.disabled=!!parts[i].userData.done;
+ if(b.disabled)b.textContent="Ya ensamblado";
+ b.onclick=function(){partCard.close();choose(i)};
+ partCard.showModal();
+}
 
 /* ===== Primera persona ===== */
 var px=0,pz=22,yaw=0,pitch=0,launch=false,drag=null,keys={},ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),baseFov=60;
@@ -357,23 +454,56 @@ cv.addEventListener("pointerdown",function(e){drag={x:e.clientX,y:e.clientY,m:0}
 cv.addEventListener("pointermove",function(e){if(!drag)return;var dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.m+=Math.abs(dx)+Math.abs(dy);drag.x=e.clientX;drag.y=e.clientY;
  if(!launch&&drag.m>6){yaw-=dx*.005;pitch=clamp(pitch-dy*.004,-1.2,1.2)}});
 cv.addEventListener("pointerup",function(e){if(drag&&drag.m<6)pick(e);drag=null});
-window.addEventListener("keydown",function(e){keys[e.key.toLowerCase()]=true});window.addEventListener("keyup",function(e){keys[e.key.toLowerCase()]=false});
+window.addEventListener("keydown",function(e){if(!partCard.open)keys[e.key.toLowerCase()]=true});window.addEventListener("keyup",function(e){keys[e.key.toLowerCase()]=false});
 Array.prototype.forEach.call(padEl.children,function(b){var k=b.getAttribute("data-k");b.addEventListener("pointerdown",function(){keys[k]=true});["pointerup","pointerleave","pointercancel"].forEach(function(ev){b.addEventListener(ev,function(){keys[k]=false})})});
 var camMode="ground";camBtn.onclick=function(){camMode=camMode==="ground"?"chase":"ground";camBtn.textContent=camMode==="ground"?"Cámara: suelo":"Cámara: seguimiento"};
 
+/* ===== Guía del cohete (cómo se arma, el SLS real, cargas y satélites) ===== */
+var infoEl=document.getElementById("info"),guideEl=document.getElementById("guide"),guideBtn=document.getElementById("guideBtn"),gTab=0;
+/* silueta del cohete: cada pieza lleva el número de su turno de montaje */
+var SHAPES={motor:'<path d="M62 268h26l7 22H55z"/>',s1:'<rect x="56" y="150" width="38" height="118"/>',srb:'<path d="M34 268V168l7-14 7 14v100zM102 268V168l7-14 7 14v100z"/>',inter:'<rect x="56" y="138" width="38" height="12"/>',s2:'<rect x="56" y="88" width="38" height="50"/>',pay:'<rect x="65" y="62" width="20" height="22"/>',fair:'<path d="M56 88V56q4-30 19-44 15 14 19 44v32" fill-opacity=".35"/>'};
+var NUMXY={motor:[75,284],s1:[75,214],srb:[41,220],inter:[75,147],s2:[75,117],pay:[75,77],fair:[75,40]};
+function gAsm(){var svg='<svg viewBox="0 0 150 300" role="img" aria-label="Esquema del cohete">',li="";
+ ORDER.forEach(function(di,k){var d=DEF[di],st=k<ai?"done":k===ai&&mode==="assembly"?"cur":"";
+  svg+='<g class="p '+st+'" fill="'+(d.id==="s2"?"#e8590c":d.id==="pay"?"#f2c230":d.col)+'">'+SHAPES[d.id]+'</g><text x="'+NUMXY[d.id][0]+'" y="'+NUMXY[d.id][1]+'" text-anchor="middle"'+(d.id==="s1"||d.id==="srb"||d.id==="fair"?' style="fill:#10172b"':'')+'>'+(k+1)+'</text>';
+  li+='<li class="'+st+'"><span class="n">'+(k<ai?"✓":k+1)+'</span><span><b>'+d.name+'</b><small>'+d.fn.charAt(0).toUpperCase()+d.fn.slice(1)+'. En el SLS: '+HIST[d.id].sls+'.</small></span></li>'});
+ return '<p>Un cohete se arma <b>de abajo hacia arriba</b>, como una torre. Control de misión te describe qué hace la pieza que toca; tú la buscas en la mesa o en el catálogo.</p><div class="gasm">'+svg+'</svg><ol>'+li+'</ol></div>'}
+function gSls(){return '<p>El <b>Sistema de Lanzamiento Espacial (SLS)</b> es el cohete de la NASA para explorar más allá de la órbita terrestre baja: el primero de su clase desde el Saturno V, y el único que puede enviar la cápsula Orión, astronautas y grandes cargas a la Luna en una sola misión.</p>'
+ +'<h2>Un diseño que evoluciona</h2><table class="gtable"><tr><th>Versión</th><th>Altura</th><th>Qué cambia</th></tr>'
+ +'<tr><td><b>Bloque 1</b><br>tripulación / carga</td><td>98 m (322 pies) / ~95 m</td><td>2 propulsores sólidos de 5 segmentos, 4 motores RS-25 y la etapa ICPS. Pesa 2,6 millones de kg con combustible y despega con 39,1 millones de newtons de empuje, como más de 160 000 motores Corvette. Envía más de 26 toneladas más allá de la Luna.</td></tr>'
+ +'<tr><td><b>Bloque 1B</b><br>tripulación / carga</td><td>~111 m (365 pies) / ~99 m</td><td>Nueva Etapa Superior de Exploración (EUS), más potente. Puede llevar a Orión junto con un pequeño módulo de hábitat, o naves grandes bajo un carenado. Es más alto que el Saturno V.</td></tr>'
+ +'<tr><td><b>Bloque 2</b><br>tripulación / carga</td><td>~111 m / ~108 m</td><td>Propulsores evolucionados: 52,9 millones de newtons de empuje y más de 45 toneladas al espacio profundo. Es el vehículo pensado para una misión humana a Marte.</td></tr></table>'
+ +'<h2>Sus primeras misiones</h2><p><b>Artemisa I:</b> lanza la cápsula Orión sin tripulación a una órbita más allá de la Luna y la trae de regreso. <b>Artemisa II:</b> lleva hasta cuatro astronautas cerca de la Luna, más lejos de lo que ningún humano ha viajado.</p>'
+ +'<h2>Las piezas del Bloque 1, de la punta a la base</h2><p>Sistema de cancelación de lanzamiento · módulo de tripulación y módulo de servicio (Orión) · adaptadores de la nave y de la etapa · etapa de propulsión criogénica provisional (ICPS) · adaptador de etapa del vehículo de lanzamiento · etapa central · 2 propulsores de cohetes sólidos · 4 motores RS-25.</p>'}
+var SATS=[["leo","Órbita baja (~400 km)","Satélites que miran la Tierra de cerca y vuelven a pasar seguido. Aquí también vuelan las estaciones espaciales."],["sso","Heliosíncrona (~700 km)","Satélites de observación: cruzan cada lugar a la misma hora solar, ideal para comparar imágenes de incendios, cultivos o clima."],["geo","Geoestacionaria (35 786 km)","Satélites de comunicaciones y meteorología: ven siempre el mismo lado de la Tierra."],["l1","Punto L1 (1,5 millones de km)","Observatorios que vigilan el Sol sin interrupción y avisan de tormentas solares."],["deep","Luna y Marte","Módulos de aterrizaje y rovers: además de volar, tienen que frenar y posarse en otro mundo."]];
+function gPay(){var cur=M0.deep?"deep":orbitKind;
+ return '<h2>Qué puede llevar un cohete como el SLS</h2><div class="gcards"><div class="gcard"><b>🧑‍🚀 Tripulación</b>La cápsula Orión con hasta cuatro astronautas. En la punta va el sistema de cancelación de lanzamiento, que los aleja del cohete si algo falla.</div><div class="gcard"><b>📦 Carga</b>Sistemas de exploración grandes, como un módulo de hábitat para el espacio profundo, protegidos por un carenado.</div><div class="gcard"><b>🔭 Ciencia</b>Naves robóticas hacia lugares como Marte, Saturno y Júpiter.</div></div>'
+ +'<h2>Tu carga en esta misión</h2><p><b>'+M0.pay+':</b> '+M0.payFn+'.</p>'
+ +'<h2>Tipos de satélite según a dónde van</h2><div class="gcards">'+SATS.map(function(x){return '<div class="gcard'+(x[0]===cur?" on":"")+'"><b>'+x[1]+(x[0]===cur?" · tu misión":"")+'</b>'+x[2]+'</div>'}).join("")+'</div>'}
+var GT=[["🧩 Cómo se arma",gAsm],["🚀 El SLS real",gSls],["🛰️ Cargas y satélites",gPay]];
+function updGuide(){if(!guideEl.classList.contains("on"))return;document.getElementById("gtabs").innerHTML="";GT.forEach(function(g,i){var b=document.createElement("button");b.textContent=g[0];if(i===gTab)b.className="on";b.onclick=function(){gTab=i;updGuide()};document.getElementById("gtabs").appendChild(b)});
+ var gb=document.getElementById("gbody");gb.innerHTML=GT[gTab][1]();gb.scrollTop=0}
+function openGuide(i){if(typeof i==="number")gTab=i;guideEl.classList.add("on");updGuide()}
+guideBtn.onclick=function(){openGuide()};
+document.getElementById("gclose").onclick=function(){guideEl.classList.remove("on");if(mode==="intro")begin()};
+guideEl.addEventListener("click",function(e){if(e.target===guideEl)guideEl.classList.remove("on")});
+
 /* ===== Ensamblaje ===== */
 var ai=0,busy=false,mode="intro";
-function askAssembly(){mode="assembly";stepEl.textContent="Ensamblaje "+(ai+1)+" de "+DEF.length;say("Necesito la pieza que "+DEF[ai].fn+". Elígela en el catálogo o tócala en la mesa.")}
+function askAssembly(){mode="assembly";infoEl.style.display="none";updGuide();stepEl.textContent="Ensamblaje "+(ai+1)+" de "+DEF.length;say("Pieza "+(ai+1)+" de "+DEF.length+". Necesito la pieza que "+DEF[ORDER[ai]].fn+". Elígela en el catálogo o tócala en la mesa. Si dudas, abre la guía.")}
+/* Ficha de la pieza recién colocada: qué es en el SLS real y su historia. */
+function showInfo(d){var hi=HIST[d.id];if(!hi)return;infoEl.innerHTML="<b>En el SLS de la NASA: "+hi.sls+"</b><ul>"+hi.h.map(function(x){return "<li>"+x+"</li>"}).join("")+"</ul>";infoEl.style.display="block"}
 function pick(e){if(mode!=="assembly"||busy)return;var r=cv.getBoundingClientRect();
  mouse.set((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height)*2+1);ray.setFromCamera(mouse,cam);
  var hit=ray.intersectObjects(parts.filter(function(p){return !p.userData.done&&p.parent===scene}),true)[0];if(!hit)return;
- var o=hit.object;while(o&&o.userData.i===undefined)o=o.parent;if(o)choose(o.userData.i)}
-function choose(i){if(mode!=="assembly"||busy||parts[i].userData.done)return;var d=DEF[i],o=parts[i];
- if(i===ai){o.userData.done=true;o.userData.l.style.display="none";chips[i].disabled=true;
-  o.userData.tw={t:0,p0:o.position.clone(),p1:new THREE.Vector3(0,bases[ai],RZ0)};busy=true;ai++;
-  say("¡Exacto! Esa es la "+d.name.toLowerCase()+": "+d.fn+".");
-  setTimeout(function(){busy=false;if(ai<DEF.length)askAssembly();else{mode="transition";startLaunch()}},1800)}
- else{chips[i].classList.add("bad");setTimeout(function(){chips[i].classList.remove("bad")},600);say("Esa es la "+d.name.toLowerCase()+": "+d.fn+". Busca la pieza que "+DEF[ai].fn+".")}}
+ var o=hit.object;while(o&&o.userData.i===undefined)o=o.parent;if(o)inspectPart(o.userData.i)}
+function choose(i){if(mode!=="assembly"||busy||parts[i].userData.done)return;var d=DEF[i],o=parts[i],need=DEF[ORDER[ai]];
+ if(i===ORDER[ai]){o.userData.done=true;o.userData.l.style.display="none";chips[i].disabled=true;
+  o.userData.tw={t:0,p0:o.position.clone(),p1:new THREE.Vector3(0,bases[i],RZ0)};busy=true;ai++;updGuide();
+  /* El jugador decide cuándo seguir: así alcanza a leer (y oír) la historia de la pieza. */
+  var end=ai>=DEF.length,hi=HIST[d.id],txt="¡Exacto! "+d.name+": "+d.fn+".";showInfo(d);
+  say(txt,[[end?"Llevar el cohete a la plataforma →":"Siguiente pieza →",function(){busy=false;infoEl.style.display="none";if(!end)askAssembly();else{mode="transition";startLaunch()}}]],hi?txt+" En el cohete real de la NASA es: "+hi.sls+". "+hi.h[0]:txt)}
+ else{chips[i].classList.add("bad");setTimeout(function(){chips[i].classList.remove("bad")},600);say("Esa pieza es "+d.name+": "+d.fn+". Busca la que "+need.fn+".")}}
 
 /* ===== Despegue ===== */
 var lp=0,vy=0,drift=0,igT=0,li=0,debris=[],tgtY=6,satT=-1,layerIdx=0,acF=0,acS=0,acT=0,autoChase=false;
@@ -388,6 +518,8 @@ var L=[
  {q:"Llegamos a cero. ¿Qué sigue?",ok:"Ignición de los motores",hint:"Hay que generar empuje.",fact:"Los motores se encienden y el empuje crece con el cohete aún sujeto.",dur:3600,go:function(){lp=1;igT=0;burst();fx("Ignición",2600)}},
  {q:"El empuje ya supera al peso. ¿Qué pasa ahora?",ok:"Despegue: se sueltan las sujeciones",hint:"El cohete abandona la plataforma.",fact:"Es el despegue, o liftoff.",dur:3600,go:function(){lp=2;fx("Despegue",2600)}},
  {q:"Subimos tan rápido que el aire presiona la estructura al máximo. ¿Cómo se llama ese momento?",ok:"Max Q",hint:"Es el punto de máxima presión dinámica.",fact:"En Max Q la estructura soporta su mayor esfuerzo aerodinámico.",dur:3400,go:function(){lp=3;fx("Max Q",2400)}},
+ {q:"Los propulsores sólidos ya quemaron todo su propelente. ¿Qué hacemos con ellos?",ok:"Soltar los propulsores sólidos",hint:"Vacíos solo son peso muerto a los lados del cohete.",fact:"Los dos propulsores se separan y caen. En el SLS cada uno aportó 16 millones de newtons de empuje.",dur:3600,go:function(){fx("Separación de propulsores",2600);var v=rvel(),sr=parts[6];
+   [sr.userData.b0,sr.userData.b1].forEach(function(b,k){detach(b,new THREE.Vector3(v.x*.9+(k?-7:7),v.y*.9,k?-6:6),new THREE.Vector3(.3,0,k?-.5:.5),30)})}},
  {q:"El combustible de la primera etapa se acaba. ¿Qué hacemos?",ok:"Apagar motores y separar la primera etapa",hint:"Ya no sirve y solo agrega peso.",fact:"El apagado se llama MECO. Después se separa la primera etapa.",dur:4000,go:function(){lp=4;fx("Separación de etapas",2800);var v=rvel(),th=heading();
    [parts[0],parts[1],parts[2]].forEach(function(p,i){detach(p,new THREE.Vector3(v.x*.8+(i-1)*3,v.y*.8,(i-1)*2),new THREE.Vector3(.4,.1,.6),35)});
    for(var i=0;i<60;i++)smoke.emit(rocket.position.x,rocket.position.y+bases[3],rocket.position.z,(rnd()-.5)*30,(rnd()-.5)*20,(rnd()-.5)*30,3,3,14);
@@ -414,11 +546,11 @@ function drawOrbitMap(){
  box.style.display="block"}
 /* ===== Misiones ===== */
 var MS=[
- {name:"Órbita terrestre",icon:"🛰️",desc:"Coloca un satélite en órbita alrededor de la Tierra.",meta:"8 fases · Corta",pay:"Satélite",payFn:"es el satélite que queremos dejar en órbita alrededor de la Tierra",deep:false},
- {name:"La Luna",at:"la Luna",icon:"🌙",desc:"Envía un módulo lunar hasta la Luna con una inyección translunar.",meta:"9 fases · Media",pay:"Módulo lunar",payFn:"es el módulo que descenderá sobre la superficie de la Luna",deep:true,body:"moon",R:650,km:384400,tli:"Inyección translunar"},
- {name:"Marte",at:"Marte",icon:"🔴",desc:"Envía un rover a Marte con una inyección transmarciana.",meta:"9 fases · Larga",pay:"Rover marciano",payFn:"es el rover que explorará la superficie de Marte",deep:true,body:"mars",R:850,km:225000000,tli:"Inyección transmarciana"}
+ {name:"Órbita terrestre",icon:"🛰️",desc:"Coloca un satélite en órbita alrededor de la Tierra.",meta:"9 fases · Corta",pay:"Satélite",payFn:"es el satélite que queremos dejar en órbita alrededor de la Tierra",deep:false},
+ {name:"La Luna",at:"la Luna",icon:"🌙",desc:"Envía un módulo lunar hasta la Luna con una inyección translunar.",meta:"10 fases · Media",pay:"Módulo lunar",payFn:"es el módulo que descenderá sobre la superficie de la Luna",deep:true,body:"moon",R:650,km:384400,tli:"Inyección translunar"},
+ {name:"Marte",at:"Marte",icon:"🔴",desc:"Envía un rover a Marte con una inyección transmarciana.",meta:"10 fases · Larga",pay:"Rover marciano",payFn:"es el rover que explorará la superficie de Marte",deep:true,body:"mars",R:850,km:225000000,tli:"Inyección transmarciana"}
 ];
-var M0=MS[0],transit=false,hv=new THREE.Vector3(0,1,0),UPV=new THREE.Vector3(0,1,0),v3b=new THREE.Vector3(),tgt=null,D0=5500,tdist=1e9,look=new THREE.Vector3(0,6,RZ),TAGS=["Cuenta regresiva","Ignición","Despegue","Max Q","Separación de etapas","Cofia","Inserción orbital"];
+var M0=MS[0],transit=false,hv=new THREE.Vector3(0,1,0),UPV=new THREE.Vector3(0,1,0),v3b=new THREE.Vector3(),tgt=null,D0=5500,tdist=1e9,look=new THREE.Vector3(0,6,RZ),TAGS=["Cuenta regresiva","Ignición","Despegue","Max Q","Propulsores","Separación de etapas","Cofia","Inserción orbital"];
 var arrived=false,landing=false,landed=false,lv=9,acL=0,acD=0,patch=null,LEG=.63,lqt=new THREE.Quaternion(),ln=new THREE.Vector3(),lt1=new THREE.Vector3(),lt2=new THREE.Vector3();
 function mkBody(kind,R){var W=1024,H=512,c=document.createElement("canvas");c.width=W;c.height=H;var g=c.getContext("2d"),moon=kind==="moon";
  g.fillStyle=moon?"#9b9a96":"#b5532f";g.fillRect(0,0,W,H);
@@ -454,12 +586,13 @@ function landStep(dt){var ps=parts[4],c=tgt.position;ln.subVectors(ps.position,c
  lt1.set(0,0,1).cross(ln);if(lt1.lengthSq()<1e-4)lt1.set(1,0,0);lt1.normalize();lt2.crossVectors(ln,lt1);
  lqt.setFromUnitVectors(UP0,ln);ps.quaternion.slerp(lqt,Math.min(1,dt*2.5));
  var alt=dist-M0.R-LEG,sbx=c.x+ln.x*(M0.R+.3),sby=c.y+ln.y*(M0.R+.3),sbz=c.z+ln.z*(M0.R+.3);
- if(!landed){var tv=clamp(alt*.8,3,70);lv+=(tv-lv)*Math.min(1,dt*2);ps.position.addScaledVector(ln,-lv*dt);alt=ps.position.distanceTo(c)-M0.R-LEG;
+ if(!landed){var bad=missionOutcome==="landing_fail",tv=clamp(alt*.8,bad?26:3,70);lv+=(tv-lv)*Math.min(1,dt*2);ps.position.addScaledVector(ln,-lv*dt);alt=ps.position.distanceTo(c)-M0.R-LEG;
   acL+=130*dt;while(acL>=1){acL--;var s0=lv+20+rnd()*12;fire.emit(ps.position.x-ln.x*.5,ps.position.y-ln.y*.5,ps.position.z-ln.z*.5,-ln.x*s0+(rnd()-.5)*4,-ln.y*s0+(rnd()-.5)*4,-ln.z*s0+(rnd()-.5)*4,.22+rnd()*.22,1.3,.4)}
   if(alt<30){acD+=(40+(30-alt)*5)*dt;while(acD>=1){acD--;var a=rnd()*6.283,sv=5+rnd()*14,ca=Math.cos(a),sa=Math.sin(a);
    smoke.emit(sbx,sby,sbz,(lt1.x*ca+lt2.x*sa)*sv+ln.x*rnd()*2,(lt1.y*ca+lt2.y*sa)*sv+ln.y*rnd()*2,(lt1.z*ca+lt2.z*sa)*sv+ln.z*rnd()*2,2.5+rnd()*2,1.2,9)}}
   plight.position.copy(ps.position).addScaledVector(ln,-2.5);plight.intensity=(alt<60?5:2.5)*(.8+rnd()*.4);
-  if(alt<=.04){landed=true;ps.position.copy(c).addScaledVector(ln,M0.R+LEG);plight.intensity=0;fx("Aterrizaje en "+M0.at,3600);
+  if(alt<=.04){landed=true;ps.position.copy(c).addScaledVector(ln,M0.R+LEG);plight.intensity=0;fx(bad?"Falla en el aterrizaje":"Aterrizaje en "+M0.at,3600);
+   if(bad){ps.visible=false;for(var j=0;j<120;j++){var e=rnd()*6.283,se=10+rnd()*40;fire.emit(sbx,sby,sbz,(lt1.x*Math.cos(e)+lt2.x*Math.sin(e))*se+ln.x*(6+rnd()*20),(lt1.y*Math.cos(e)+lt2.y*Math.sin(e))*se+ln.y*(6+rnd()*20),(lt1.z*Math.cos(e)+lt2.z*Math.sin(e))*se+ln.z*(6+rnd()*20),.5+rnd()*.8,5+rnd()*4,16)}}
    for(var i=0;i<90;i++){var b=rnd()*6.283,sv2=8+rnd()*20,cb=Math.cos(b),sb=Math.sin(b);smoke.emit(sbx,sby,sbz,(lt1.x*cb+lt2.x*sb)*sv2+ln.x*rnd()*3,(lt1.y*cb+lt2.y*sb)*sv2+ln.y*rnd()*3,(lt1.z*cb+lt2.z*sb)*sv2+ln.z*rnd()*3,3+rnd()*3,1.5,12)}}}}
 function buildMenu(){var box=document.getElementById("mcards");MS.forEach(function(m,i){var b=document.createElement("button");b.className="mcard";b.innerHTML="<span class=\"mi\">"+m.icon+"</span><strong>"+m.name+"</strong><span>"+m.desc+"</span><em>"+m.meta+"</em>";b.onclick=function(){selectMission(i)};box.appendChild(b)})}
 function updTL(){var it=tlEl.children;for(var i=0;i<it.length;i++)it[i].className=i<li?"done":i===li?"cur":""}
@@ -472,7 +605,9 @@ function selectMission(i){M0=MS[i];misEl.style.display="none";document.getElemen
   L.push({wait:function(){return tdist<1900},q:"Llegamos a "+M0.at+". ¿Qué hacemos con el "+M0.pay.toLowerCase()+"?",ok:"Separar el "+M0.pay.toLowerCase(),hint:"La misión es dejar la carga en su destino.",fact:"El "+M0.pay.toLowerCase()+" queda libre, frena con sus motores y se posa sobre la superficie de "+M0.at+".",dur:12500,go:function(){lp=8;fx("Carga liberada",2800);var v=rvel(),d=hv.clone().multiplyScalar(9);detach(parts[4],new THREE.Vector3(v.x+d.x,v.y+d.y,0),new THREE.Vector3(0,.6,0),0);debris.pop();satT=0;landing=true;landed=false;lv=9;if(patch)patch.visible=true}})
  }else L.push(last);
  var tg=TAGS.slice();if(M0.deep)tg.push(M0.tli);tg.push("Carga útil");tlEl.innerHTML=tg.map(function(t){return "<li>"+t+"</li>"}).join("");
- say("Control de misión: misión a "+M0.name+" confirmada. Estás en primera persona: camina con W A S D, las flechas o los botones, y arrastra para mirar. Te pediré cada pieza según lo que hace.",[["Empezar",askAssembly]])}
+ guideBtn.style.display="block";
+ say("Control de misión: misión a "+M0.name+" confirmada. Vamos a armar el cohete pieza por pieza, de abajo hacia arriba. Primero mira la guía: te muestra las siete piezas y en qué orden van.",[["📖 Ver la guía",function(){openGuide(0)}],["Empezar a ensamblar",begin]])}
+function begin(){say("Estás en primera persona: camina con W A S D, las flechas o los botones, y arrastra para mirar. Te pediré cada pieza según lo que hace.",[["Entendido",askAssembly]])}
 function shot(){var f,az=0,el=0,d=0,off=null,l=null,up=null,Y=function(y){return rocket.localToWorld(new THREE.Vector3(0,y,0))};
  if(satT>=0&&landing){f=parts[4].position.clone();var n=f.clone().sub(tgt.position).normalize(),alt=Math.max(0,f.distanceTo(tgt.position)-M0.R-LEG);
   off=n.clone().multiplyScalar(clamp(alt*.25,1.5,10)).add(new THREE.Vector3(0,0,clamp(12+alt*.08,13,28)));l=f.clone().addScaledVector(n,-clamp(alt*.15,.5,6));up=n}
@@ -487,7 +622,7 @@ function shot(){var f,az=0,el=0,d=0,off=null,l=null,up=null,Y=function(y){return
  else if(lp===6){f=Y(bases[3]+4);az=1;el=.3;d=60}
  else{f=Y(bases[3]+4);az=.8;el=.25;d=70}
  if(!l)l=f.clone();return{f:f,l:l,az:az,el:el,d:d,off:off,up:up}}
-function startLaunch(){stepEl.textContent="Plataforma de lanzamiento";say("¡Cohete ensamblado! Ahora lo llevamos a la plataforma de lanzamiento.");
+function startLaunch(){guideBtn.style.display="none";guideEl.classList.remove("on");stepEl.textContent="Plataforma de lanzamiento";say("¡Cohete ensamblado! Ahora lo llevamos a la plataforma de lanzamiento.");
  setTimeout(function(){fadeEl.style.opacity=1;setTimeout(function(){
   launch=true;catEl.style.display="none";padEl.style.display="none";telEl.style.display="block";camBtn.style.display="block";
   rocket.position.set(RX,0,RZ);px=RX;pz=RZ+60;cam.position.set(RX+22,5,RZ+36);look.set(RX,4,RZ);camMode="chase";autoChase=true;camBtn.textContent="Cámara: seguimiento";tlEl.style.display="block";scene.fog.color.copy(skyDay);fadeEl.style.opacity=0;setTimeout(askLaunch,900)},800)},1900)}
@@ -504,6 +639,8 @@ function askLaunch(){
    say("¡Anomalía! El lanzador falló poco después del despegue: la misión se perdió antes de llegar a órbita.",[["Entendido",function(){location.reload()}]]);fx("Falla en el lanzamiento",3500)
   }else if(missionOutcome==="orbit_fail"){
    say("El cohete dejó la nave en una órbita de transferencia, pero sin el quemado de circularización se queda ahí: nunca llegó a su órbita final.",[["Entendido",function(){location.reload()}]]);fx("No se alcanzó la órbita",3500)
+  }else if(missionOutcome==="landing_fail"){
+   say("La nave llegó a "+M0.at+", pero bajó demasiado rápido y se estrelló contra la superficie. Aterrizar es la parte más difícil del viaje.",[["Entendido",function(){location.reload()}]])
   }else{
    say("¡Misión cumplida! Ensamblaste el cohete y completaste todas las fases de la misión: "+M0.name+".",[["Jugar de nuevo",function(){location.reload()}]]);fx("Misión cumplida",3500)
   }
@@ -512,8 +649,28 @@ function askLaunch(){
  stepEl.textContent="Fase "+(li+1)+" de "+L.length;updTL();
  var lab=shuffle([it.ok].concat(shuffle(L.filter(function(x){return x!==it}).map(function(x){return x.ok})).slice(0,2)));
  function render(m){say(m,lab.map(function(o){return [o,function(){
-  if(o===it.ok){say("¡Correcto! "+it.fact);it.go();li++;setTimeout(askLaunch,it.dur)}else render("Todavía no. "+it.hint)}]}))}
+  if(o===it.ok){say("¡Correcto! "+it.fact);it.go();li++;setTimeout(askLaunch,it.dur)}else showDecisionConsequence(o,it,render)}]}))}
  render(it.q)}
+
+/* Una decisión incorrecta se representa en el hangar y después vuelve al
+   mismo punto de control para que el jugador pueda corregirla. */
+function showDecisionConsequence(choice,it,render){
+ var phase=li,oldY=rocket.position.y,oldRot=rocket.rotation.z,oldLp=lp;
+ var earlyBooster=choice==="Soltar los propulsores sólidos"&&it.ok!==choice;
+ var text=earlyBooster
+  ?"¡Error! Los propulsores todavía empujan. Al soltarlos ahora, el cohete pierde empuje, pierde altura y cae. Se reinicia esta fase para que lo intentes de nuevo."
+  :"¡Error! "+it.hint+" Observa la consecuencia: el cohete pierde estabilidad y altura antes de quedar fuera de peligro.";
+ if(earlyBooster){fx("Empuje perdido",1800);plight.intensity=8;}
+ rocket.rotation.z=oldRot+.24;rocket.position.y=Math.max(rocket.position.y,launch?40:1);
+ var fallStart=performance.now(),startY=rocket.position.y;
+ function fall(){var p=Math.min(1,(performance.now()-fallStart)/1250);rocket.position.y=startY-9*p;rocket.rotation.z=oldRot+.24*p;
+  if(p<1){requestAnimationFrame(fall);return}
+  fx("Pérdida de altura",1600);fxEl.style.color="#e76b66";
+  setTimeout(function(){rocket.position.y=oldY;rocket.rotation.z=oldRot;lp=oldLp;plight.intensity=0;
+   if(phase===li&&mode!=="done")render(text)},1800);
+ }
+ say(text);requestAnimationFrame(fall);
+}
 
 /* ===== Ciclo ===== */
 var clock=new THREE.Clock(),v3=new THREE.Vector3(),want=new THREE.Vector3();
@@ -571,6 +728,7 @@ function loop(){requestAnimationFrame(loop);var dt=Math.min(clock.getDelta(),.05
  var ao=clamp((fy-700)/1500,0,.4);atmo.visible=ao>0;atmo.material.opacity=ao;
  if(launch){var li2=0;for(var q=0;q<4;q++)if(fy>LTH[q])li2=q+1;if(li2!==layerIdx){layerIdx=li2;fx(LAYERS[li2],2600)}
   telEl.textContent=transit&&landed?"Aterrizaje en "+M0.at+" · 0.0 km/s":transit&&arrived&&vy<1?"Llegada a "+M0.at+" · 0.0 km/s":transit?"Distancia a "+M0.at+": "+Math.round(Math.max(0,tdist-M0.R-350)/(D0-M0.R-350)*M0.km).toLocaleString("es")+" km · "+(vy*.025).toFixed(1)+" km/s":"Altitud "+(fy*.04).toFixed(1)+" km · "+(vy*.035).toFixed(2)+" km/s · "+LAYERS[layerIdx]}
+ if(window.workshopTick)window.workshopTick();
  renderer.render(scene,cam)}
 resize();loop();
 buildMenu();
@@ -579,13 +737,14 @@ buildMenu();
    archivo: se queda usable de forma independiente si nadie manda mensajes. */
 window.addEventListener("message",function(ev){
  var d=ev&&ev.data;if(!d||d.type!=="hangar:start")return;
+ try{if(!localStorage.getItem("smd-hangar-voice-lang")&&d.lang)voiceLang=d.lang==="en"?"en":"es"}catch(e){}
  var idx=(typeof d.missionIndex==="number"&&MS[d.missionIndex])?d.missionIndex:0;
  if(d.orbitName)MS[idx].name=d.orbitName;
  if(d.payloadDesc)MS[idx].payFn=d.payloadDesc;
  if(d.orbitKind)orbitKind=d.orbitKind;
  missionOutcome=d.outcome||"success";
  var ok=missionOutcome==="success"||missionOutcome==="lost";
- if(d.needsBurn&&ok)MS[idx].meta="9 fases · Media";
+ if(d.needsBurn&&ok)MS[idx].meta="10 fases · Media";
  selectMission(idx);
  /* Falla real, ya decidida por el motor de simulación (shared/engine.js)
     según las decisiones del jugador en el Diseñador/Hangar: aquí solo se
@@ -593,7 +752,7 @@ window.addEventListener("message",function(ev){
     de inventar un sistema de errores aparte que cambiaría el resultado. */
  if(missionOutcome==="cancelled"){L.length=0}
  else if(missionOutcome==="launch_fail"){L.length=Math.min(L.length,3)}
- else if(missionOutcome==="orbit_fail"){L.length=Math.min(L.length,7)}
+ else if(missionOutcome==="orbit_fail"){L.length=Math.min(L.length,8)}
  /* Órbitas altas/lejanas (GEO, L1) necesitan un segundo encendido para
     circularizar: se agrega como una fase más del control de misión, igual
     que el motor real necesita ese empuje extra (mismo criterio que usa
@@ -606,5 +765,6 @@ window.addEventListener("message",function(ev){
 });
 try{window.parent.postMessage({type:"hangar:ready"},"*")}catch(e){}
 </script>
+<script src="workshop.js"></script>
 </body>
 </html>

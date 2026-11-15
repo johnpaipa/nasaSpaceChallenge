@@ -35,8 +35,8 @@ await page.evaluate(() => { [...document.querySelectorAll('button.option')].slic
 await page.evaluate(() => document.querySelector('button.launch')?.click());
 await wait(7500);
 await audit('4-report');
-await page.goto('http://localhost:3001', { waitUntil: 'networkidle0' });
-await page.evaluate(() => [...document.querySelectorAll('.demo-explore button')][1]?.click());
+await page.goto('http://localhost:3001/?debug', { waitUntil: 'networkidle0' });
+await page.evaluate(() => document.querySelector('#home-explore button')?.click());
 await wait(3000);
 await audit('5-difficulty');
 await page.evaluate(() => document.querySelector('button.difficulty')?.click());
